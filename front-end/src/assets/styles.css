@@ -1,0 +1,172 @@
+/* 全局样式文件，在 main.js 中引入以确保导入成功 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f1f5f9;
+  --bg-main: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --hover-bg: #e2e8f0;
+}
+
+.theme-dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-main: #0f172a;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --hover-bg: #334155;
+}
+
+.theme-orange {
+  --bg-primary: #fff7ed;
+  --bg-secondary: #fed7aa;
+  --bg-main: #ffedd5;
+  --text-primary: #9a3412;
+  --text-secondary: #c2410c;
+  --hover-bg: #fdba74;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar {
+  width: 16rem;
+  background-color: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: width 0.3s ease; /* 添加过渡效果 */
+}
+
+.sidebar.collapsed {
+  width: 2px; /* 收缩时的宽度 */
+  background-color: purple; /* 紫色背景 */
+  border: none; /* 去除边框 */
+}
+
+.sidebar-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.sidebar-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.menu-item {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.menu-item:hover {
+  background-color: var(--hover-bg);
+}
+
+.submenu-item {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.submenu-item:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.theme-switch {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.theme-switch-button {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.theme-switch-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--text-secondary);
+}
+
+.theme-switch-button.light {
+  background-color: #ffffff;
+}
+
+.theme-switch-button.dark {
+  background-color: #1e293b;
+}
+
+.theme-switch-button.orange {
+  background-color: #f97316;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  background-color: var(--bg-main);
+  transition: background-color 0.3s;
+}
+
+.main-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.main-text {
+  margin-top: 1rem;
+  color: var(--text-secondary);
+}
+
+/* Floating button for expanding sidebar */
+.sidebar-expand-btn {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  background-color: #eae0f1; /* 紫色背景 */
+  color: white;
+  font-size: 1.5rem;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.sidebar-expand-btn:hover {
+  
+ 
+  animation: slide-in-left 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+ /* 鼠标悬停时变暗 */
+}
+
+@keyframes slide-in-left {
+  0% {
+    transform: translateX(-8px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0px);
+    opacity: 1;
+  }
+}
+
+.sidebar-expand-btn:active {
+  transform: scale(0.97);
+}
