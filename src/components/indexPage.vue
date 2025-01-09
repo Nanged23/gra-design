@@ -129,9 +129,9 @@ body {
 }
 
 .username {
-  font-family: 'Dancing Script', cursive;
+  font-family: "Playwrite AU SA", 'serif';
   color: rgb(219, 217, 138);
-  margin-bottom: 15px;
+  margin-bottom: 15px; 
 }
 
 .advice-container {
@@ -270,7 +270,7 @@ body {
 }
 </style>
 <script>
-import { get } from 'core-js/core/dict';
+ 
 
 export default {
   computed: {
