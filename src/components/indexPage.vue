@@ -1,12 +1,12 @@
   <template>
     <div class="container">
-      <div class="input">
+      <div class="menu">
         <div class="logo">
           <img class="logo-img" src="../assets/logo.png" alt="Logo" />
         </div>
 
         <div class="">
-          <div class="username" align="center">Nanged</div>
+          <div class="username" align="center">{{ user_name }}</div>
           <div class="advice-container">
             <p class="paragraph">Q U O T E</p>
             <div class="advice-details">“Loading...🫠”</div>
@@ -27,7 +27,7 @@
 
         </div>
         <!-- 第一菜单 -->
-        <button class="value" :class="{ 'selected': selectedButton === 'main' }" @click="navigateTo('main')">
+        <button class="value" disabled>
           <svg t="1733724646414" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
             p-id="8001" width="20" height="20">
             <path
@@ -49,7 +49,7 @@
         </div>
 
         <!-- 第二菜单 -->
-        <button class="value" @click="navigateTo('third')" :class="{ 'selected': selectedButton === 'third' }">
+        <button class="value" disabled>
           <svg t="1733724761546" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
             p-id="13404" id="mx_n_1733724761548" width="20" height="20">
             <path
@@ -71,7 +71,7 @@
         </div>
 
         <!-- 第三菜单 -->
-        <button class="value" :class="{ 'selected': selectedButton === 'statistics' }"
+        <!-- <button class="value" :class="{ 'selected': selectedButton === 'statistics' }"
           @click="navigateTo('statistics')">
           <svg t="1733724542243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
             p-id="4729" id="mx_n_1733724542244" width="20" height="20">
@@ -80,12 +80,16 @@
               fill="#7C8590" p-id="4730"></path>
           </svg>
           时光回响
-        </button>
+        </button> -->
       </div>
       <div class="right"> <router-view></router-view></div>
     </div>
   </template>
 <style scoped>
+body {
+  background-image: url('../assets/bg2.png');
+}
+
 .logo {
   display: flex;
   margin-top: 20px;
@@ -174,15 +178,22 @@
 .container {
   display: flex;
   height: 100vh;
+  overflow: hidden;
 }
 
 .right {
+  margin-left: 250px;
   flex-grow: 1;
+  max-height: 100vh;
+  overflow-y: auto;
+  /* 允许右侧内容滚动 */
+  padding: 20px;
 }
 
-.input {
-  top: 0;
-  left: 0;
+.menu {
+  position: fixed;
+  overflow-y: hidden;
+  left: 5px;
   display: flex;
   flex-direction: column;
   width: 250px;
@@ -191,6 +202,7 @@
   border-radius: 10px;
   transition: 1s;
   padding: 5px;
+  z-index: 1000;
 }
 
 
@@ -258,41 +270,43 @@
 }
 </style>
 <script>
+import { get } from 'core-js/core/dict';
+
 export default {
   computed: {
+
     getCard() {
       return this.hitokotoData
     }
   },
   mounted() {
-    fetch('https://v1.hitokoto.cn', {
-
-    })
-      .then(function (res) {
-        console.log(res);
-
-        return res.json();
-      })
-      .then(function (data) {
-        var hitokoto = document.getElementsByClassName('advice-details');
-        console.log(data);
-
-        hitokoto[0].innerText = data.hitokoto;
-      })
-      .catch(function (err) {
-        console.error(err);
-      })
+    this.getCookie();
+    this.getHitokoto();
   },
   data() {
     return {
       hitokotoData: '',
-      selectedButton: null
+      selectedButton: null,
+      user_name: '',
     };
   },
   methods: {
+    getCookie() {
+      this.user_name = localStorage.getItem('user_name');
+    },
+    getHitokoto() {
+      fetch('https://v1.hitokoto.cn', {
+      }).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        var hitokoto = document.getElementsByClassName('advice-details');
+        console.log(data);
+        hitokoto[0].innerText = data.hitokoto;
+      }).catch(function (err) { console.error(err); })
+    },
     navigateTo(menu) {
       this.selectedButton = menu;
-      this.$router.push(`/${menu}`);
+      this.$router.push(`/indexPage/${menu}`); // 修改为子路由路径
     }
   }
 

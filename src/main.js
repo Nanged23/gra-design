@@ -1,12 +1,13 @@
 // `src/main.js`
 import { createApp } from 'vue';
-import App from './App.vue';
-import './assets/styles.css';
+import App from './App.vue'; 
 import router from './router';
 import store from './store';
 import axios from './plugins/axios'; // 引入 Axios
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import "core-js/stable";
+import "regenerator-runtime/runtime";
 
 const app = createApp(App);
 
@@ -15,3 +16,6 @@ app.use(store) // 挂载 Vuex
   .use(router) // 挂载路由
   .use(ElementPlus) // 挂载 Element Plus
   .mount('#app');
+
+
+  
