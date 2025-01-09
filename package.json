@@ -19,7 +19,7 @@
     "v-charts": "^1.19.0",
     "vue": "^3.2.13",
     "vue-router": "^4.5.0",
-    "vuesax": "^4.0.1-alpha.25",
+    "vuesax-alpha": "^0.2.0-beta.80",
     "vuex": "^4.1.0"
   },
   "devDependencies": {
