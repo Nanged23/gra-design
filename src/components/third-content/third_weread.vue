@@ -1,6 +1,44 @@
+
+<template>
+    <div class="all" :class="{ 'sidebar-collapsed': !isSidebarOpen }">
+        <button @click="get_message()">
+            获取
+        </button>
+
+        <!-- 渲染文件 -->
+        <div class="book-grid">
+            <div v-for="book in booksNotInarchives()" :key="book.bookId" class="card">
+                <div class="card-content">
+                    <img :src="book.cover" class="card-image">
+                    <div class="card-title">{{ truncatedTitle(book.title) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 渲染文件夹 -->
+        <div class="archive-grid" v-if="archive && getBooksInarchive(archive.bookIds).length > 0">
+            <div class="grid-container">
+                <div v-for="(book, index) in getBooksInarchive(archive.bookIds).slice(0, 4)" :key="book.bookId"
+                    :class="`grid-item grid-item-${index + 1}`">
+                    <img :src="book.cover" :alt="book.title" class="book-cover" />
+                </div>
+            </div>
+            <h3>{{ archive.name }}</h3>
+            <hr>
+        </div>
+    </div>
+</template>
 <style scoped>
 .all {
-    margin-left: 250px;
+    position: relative;
+    margin-left: 270px; /* 侧边栏展开时的左边距 */
+    margin-top: 60px; /* 顶部导航栏的高度 */
+    padding: 20px;
+    transition: all 0.3s ease; /* 添加过渡效果 */
+}
+
+.all.sidebar-collapsed {
+    margin-left: 70px; /* 侧边栏收起时的左边距 */
 }
 
 .archive-grid {
@@ -104,9 +142,8 @@
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
-    /* 卡片之间的间距 */
     justify-content: flex-start;
-    /* 从左侧开始排列 */
+    width: calc(100% - 40px); /* 考虑内边距 */
 }
 
 .card {
@@ -121,6 +158,9 @@
     transition: all 0.5s;
     margin-bottom: 16px;
     /* 垂直方向的间距 */
+    width: calc((100% - 64px) / 5); /* 5列布局，减去间距 */
+    min-width: 150px; /* 设置最小宽度 */
+    max-width: 200px; /* 设置最大宽度 */
 }
 
 .card-content {
@@ -153,37 +193,26 @@
 
     transform: scale(1.05);
 }
+
+/* 在小屏幕上自动调整列数 */
+@media screen and (max-width: 1400px) {
+    .card {
+        width: calc((100% - 48px) / 4); /* 4列布局 */
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    .card {
+        width: calc((100% - 32px) / 3); /* 3列布局 */
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .card {
+        width: calc((100% - 16px) / 2); /* 2列布局 */
+    }
+}
 </style>
-<template>
-    <div class="all">
-        <button @click="get_message()">
-            获取
-        </button>
-
-        <!-- 渲染文件 -->
-        <div class="book-grid">
-            <div v-for="book in booksNotInarchives()" :key="book.bookId" class="card">
-                <div class="card-content">
-                    <img :src="book.cover" class="card-image">
-                    <div class="card-title">{{ truncatedTitle(book.title) }}</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 渲染文件夹 -->
-        <div class="archive-grid" v-if="archive && getBooksInarchive(archive.bookIds).length > 0">
-            <div class="grid-container">
-                <div v-for="(book, index) in getBooksInarchive(archive.bookIds).slice(0, 4)" :key="book.bookId"
-                    :class="`grid-item grid-item-${index + 1}`">
-                    <img :src="book.cover" :alt="book.title" class="book-cover" />
-                </div>
-            </div>
-            <h3>{{ archive.name }}</h3>
-            <hr>
-        </div>
-    </div>
-</template>
-
 <script>
 import Cookies from 'js-cookie';
 import axios from 'axios';
@@ -191,6 +220,10 @@ export default {
     mounted() {
         Cookies.set('skey', 'cMsL2qYX', { expires: 7 });
         Cookies.set('vid', '442726869', { expires: 7 });
+        // 监听侧边栏状态变化
+        window.addEventListener('resize', this.checkSidebarState);
+        // 初始检查侧边栏状态
+        this.checkSidebarState();
     },
     data() {
         return {
@@ -199,7 +232,8 @@ export default {
                 archive: [],
                 archive: null
             },
-            archive: null
+            archive: null,
+            isSidebarOpen: true
         }
     },
     computed: {},
@@ -252,7 +286,17 @@ export default {
         truncatedTitle(title) {
             if (title.length > 15) title = title.substring(0, 15) + '...'
             return title;
+        },
+        checkSidebarState() {
+            // 通过检查父组件中侧边栏的状态来更新
+            const sidebar = document.querySelector('.vs-sidebar');
+            if (sidebar) {
+                this.isSidebarOpen = !sidebar.classList.contains('vs-sidebar-reduce');
+            }
         }
     },
+    beforeDestroy() {
+        window.removeEventListener('resize', this.checkSidebarState);
+    }
 };
 </script>

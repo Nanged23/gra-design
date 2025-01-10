@@ -14,6 +14,10 @@ import indexPage from '@/components/indexPage.vue';
 import defaultPage from '@/components/defaultPage.vue';
 const routes = [
   { 
+    path: '/', 
+    redirect: '/indexPage',
+  },
+  { 
     path: '/indexPage', 
     component: indexPage,
     children: [
@@ -30,7 +34,7 @@ const routes = [
       { path: 'statistics', component: statistics }
     ]
   },
-  { path: '/', component: init }
+  { path: '/init', component: init }
 ];
 
 const router = createRouter({

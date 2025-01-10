@@ -1,24 +1,147 @@
+
 <template>
-    <div>
-      <vs-button
-        :active="active == 0"
-        @click="active = 0"
-      >
-        Active
-      </vs-button>
-      <vs-button
-        :active="active == 1"
-        @click="active = 1"
-      >
-        Default
-      </vs-button>
-      <vs-button disabled >Disabled</vs-button>
+    <div class="hidden">
+      <vs-navbar shadow square center-collapsed v-model="active">
+        <template #left>
+          <vs-button @click="activeSidebar = !activeSidebar" flat icon>
+            <i class='bx bx-menu'></i>
+          </vs-button>
+        </template>
+                <vs-navbar-item :active="active == 'guide'" id="guide">
+                Guide
+                </vs-navbar-item>
+                <vs-navbar-item :active="active == 'docs'" id="docs">
+                Documents
+                </vs-navbar-item>
+                <vs-navbar-item :active="active == 'components'" id="components">
+                Components
+                </vs-navbar-item>
+                <vs-navbar-item :active="active == 'license'" id="license">
+                license
+                </vs-navbar-item>
+        <template #right>
+          <vs-button flat >Login</vs-button>
+          <vs-button>Get Started</vs-button>
+        </template>
+      </vs-navbar>
+      <vs-sidebar
+        absolute
+        v-model="active"
+        :open.sync="activeSidebar"
+        background="#3C453D"
+        textWhite
+        >
+        <template #logo>
+          
+          <img class="logo-img" src="../../assets/logo.png" alt="Logo" />
+       
+        </template>
+     
+        <vs-sidebar-group>
+          <template #header>
+            <vs-sidebar-item arrow>
+              <template #icon>
+                <svg t="1733724646414" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+            p-id="8001" width="20" height="20">
+            <path
+              d="M256.8704 769.5872s184.9344-508.416 428.9024-628.5824C420.096 359.424 223.5392 1014.8352 223.5392 1014.8352l338.8416-90.8288s-10.752-17.664-30.3104-12.3904l-271.6672 72.7552s31.5904-83.7632 65.2288-137.3184c171.0592-56.1152 317.184-115.8144 375.3984-312.8832 6.5536-42.8544-23.3984-31.4368-31.7952-29.184 70.912-60.0576 209.92-258.2528 162.2528-324.2496-14.6432-9.7792-21.3504-1.1264-21.3504-1.1264S918.016 44.544 836.096 18.5856c-82.0224-26.0096-236.8 90.8288-236.8 90.8288s2.6624-34.9696-33.792-25.1904C427.008 138.496 348.5184 282.7264 348.5184 282.7264s-10.24-38.3488-28.3648-16.384c-243.2 291.1744-63.2832 503.296-63.2832 503.296z"
+              fill="#7C8590" p-id="8002"></path>
+          </svg>
+              </template>
+             我手写我心
+            </vs-sidebar-item>
+          </template>
+
+          <vs-sidebar-item id="Instagram">
+            <template #icon>
+              <i class='bx bxl-instagram'></i>
+            </template>
+            文章
+          </vs-sidebar-item>
+          <vs-sidebar-item id="twitter">
+            <template #icon>
+              <i class='bx bxl-twitter' ></i>
+            </template>
+            瞬间
+          </vs-sidebar-item>
+          <vs-sidebar-item id="Facebook">
+            <template #icon>
+              <i class='bx bxl-facebook' ></i>
+            </template>
+            画廊
+          </vs-sidebar-item>
+          <vs-sidebar-item id="todo">
+            <template #icon>
+              <i class='bx bxl-facebook' ></i>
+            </template>
+            待办
+          </vs-sidebar-item>
+        </vs-sidebar-group>
+        <vs-sidebar-group>
+          <template #header>
+            <vs-sidebar-item arrow>
+              <template #icon>
+                <svg t="1733724761546" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+            p-id="13404" id="mx_n_1733724761548" width="20" height="20">
+            <path
+              d="M789.271 408.458c-34.693-72.439-83.605-112.333-137.727-112.333-35.399 0-69.332 17.457-98.129 50.482-7.962 9.132-15.541 19.496-22.665 30.934-6.814-26.026-14.364-50.818-22.626-74.161-21.743-61.432-47.467-110.148-76.459-144.795-33.839-40.439-71.28-60.944-111.283-60.944s-77.444 20.504-111.282 60.944c-28.992 34.646-54.716 83.363-76.458 144.794-43.272 122.263-67.104 284.17-67.104 455.895 0 17.673 14.327 32 32 32s32-14.327 32-32c0-164.637 22.529-318.96 63.436-434.541 36.144-102.123 83.773-163.092 127.408-163.092 43.635 0 91.265 60.969 127.409 163.092 40.907 115.581 63.436 269.904 63.436 434.541 0 17.673 14.327 32 32 32s32-14.327 32-32c0-96.982-7.603-190.831-22.014-276.178 0.131-0.366 0.263-0.73 0.381-1.104 23.48-74.032 61.928-121.869 97.949-121.869 27.72 0 56.88 27.693 80.005 75.977 27.054 56.49 41.953 132.309 41.953 213.489 0 17.673 14.327 32 32 32s32-14.327 32-32c0.001-90.551-17.128-176.187-48.23-241.131z"
+              fill="#7C8590" p-id="13405"></path>
+            <path
+              d="M298.409 958.84c-15.992 0-30.755-0.325-44.049-0.989-17.651-0.881-31.246-15.905-30.364-33.556 0.881-17.652 15.897-31.266 33.556-30.364 114.254 5.701 374.673-16.092 560.597-64.135-15.111-4.154-31.944-8.379-49.473-12.778-42.649-10.704-86.75-21.772-117.663-34.789-11.843-4.987-20.789-10.334-27.35-16.348-15.659-14.352-15.854-30.138-14.576-38.271 2.198-13.988 11.183-25.579 26.704-34.451 8.245-4.712 18.804-8.996 32.279-13.097 19.913-6.06 46.798-11.839 79.908-17.177 55.095-8.882 108.573-13.587 110.822-13.782 17.616-1.553 33.123 11.496 34.656 29.103 1.534 17.606-11.496 33.122-29.103 34.655-0.566 0.05-44.602 3.93-92.206 11.04-26.698 3.987-46.847 7.843-61.989 11.3 22.419 6.771 48.535 13.326 74.096 19.741 31.273 7.85 60.813 15.263 83.767 23.066 13.991 4.757 24.229 9.196 32.216 13.969 20.751 12.399 25.318 27.705 25.497 38.362 0.148 8.919-2.818 25.797-24.366 38.621-8.797 5.235-20.36 9.815-36.391 14.413-85.45 24.507-200.868 45.756-324.994 59.834-89.156 10.113-175.713 15.633-241.574 15.633z"
+              fill="#7C8590" p-id="13406"></path>
+          </svg>
+              </template>
+              他山之石，可以攻玉
+            </vs-sidebar-item>
+          </template>
+
+          <vs-sidebar-item id="github">
+            <template #icon>
+                <svg t="1736412972275" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="10613" width="25" height="25"><path d="M832 908.8H192c-44.8 0-76.8-38.4-76.8-76.8V192c0-44.8 38.4-76.8 76.8-76.8h640c44.8 0 76.8 38.4 76.8 76.8v640c0 44.8-32 76.8-76.8 76.8" fill="#37BF4C" p-id="10614"></path><path d="M633.6 723.2c19.2-32 38.4-64 51.2-102.4l-64-25.6c-19.2 44.8-38.4 83.2-57.6 121.6H454.4c-19.2-51.2-38.4-89.6-64-121.6l-51.2 32c25.6 38.4 44.8 70.4 57.6 102.4H230.4v57.6h556.8v-57.6l-153.6-6.4zM294.4 358.4v230.4h435.2V358.4H294.4z m371.2 172.8H358.4V422.4h307.2v108.8zM249.6 236.8h524.8v64H249.6z" fill="#FFFFFF" p-id="10615"></path></svg>
+            </template>
+            豆瓣
+          </vs-sidebar-item>
+          <vs-sidebar-item id="codepen">
+            <template #icon>
+                <svg t="1736412958027" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="9555" width="20" height="20"><path d="M204.078 0h615.845q202.07 0 202.07 202.07v615.845q0 202.07-202.07 202.07H204.077q-202.07 0-202.07-202.07V202.069Q2.008 0 204.078 0z" fill="#4496D3" p-id="9556"></path><path d="M616.087 869.276a106.657 106.657 0 0 0-102.641 77.663 106.657 106.657 0 0 0-102.641-77.663H7.63A202.11 202.11 0 0 0 204.077 1024h615.846a202.11 202.11 0 0 0 196.447-154.724z m255.437-128.14c-44.654 44.172-99.026 54.934-157.816 35.217-19.356-6.506-35.258-8.032-52.204 3.212a73.326 73.326 0 0 1-11.324 3.775c15.46-26.865 4.015-43.65-9.036-62.685-28.993-42.285-23.09-96.738 11.405-136.051 56.22-64.251 166.731-64.251 223.112 0 40.96 46.662 40.076 112.64-4.137 156.531z" fill="#FFFFFF" p-id="9557"></path><path d="M818.96 611.187a20.078 20.078 0 0 0-20.883 19.276 19.516 19.516 0 0 0 18.473 21.444 20.078 20.078 0 0 0 22.006-18.03 20.68 20.68 0 0 0-19.597-22.69z m-108.906 0a20.078 20.078 0 0 0-20.079 22.207 19.556 19.556 0 0 0 21.404 18.472 20.078 20.078 0 0 0 19.275-20.921 20.922 20.922 0 0 0-20.6-19.758z" fill="#4496D3" p-id="9558"></path></svg>
+            </template>
+            微信读书
+          </vs-sidebar-item>
+          <vs-sidebar-item id="discord">
+            <template #icon>
+                <svg t="1736413007349" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11726" width="20" height="20"><path d="M0 0m184.32 0l655.36 0q184.32 0 184.32 184.32l0 655.36q0 184.32-184.32 184.32l-655.36 0q-184.32 0-184.32-184.32l0-655.36q0-184.32 184.32-184.32Z" fill="#7B6A90" p-id="11727"></path><path d="M266.24 819.2a51.2 51.2 0 0 1-51.2-51.2V256a51.2 51.2 0 0 1 51.2-51.2 51.2 51.2 0 0 1 51.2 51.2v512a51.2 51.2 0 0 1-51.2 51.2z" fill="#FFFFFF" p-id="11728"></path><path d="M266.24 819.2a51.02592 51.02592 0 0 1-35.45088-14.26432 51.2 51.2 0 0 1-1.47456-72.3968l245.76-256a51.2 51.2 0 0 1 72.3968-1.47456 51.2 51.2 0 0 1 1.47456 72.3968l-245.76 256A51.05664 51.05664 0 0 1 266.24 819.2z" fill="#FFFFFF" p-id="11729"></path><path d="M768 819.2a51.03616 51.03616 0 0 1-36.20864-14.99136l-256-256a51.2 51.2 0 0 1 0-72.40704 51.2 51.2 0 0 1 72.40704 0l256 256A51.2 51.2 0 0 1 768 819.2z" fill="#FFFFFF" p-id="11730"></path><path d="M517.72416 433.5616l214.05696-214.05696a51.2 51.2 0 0 1 72.40704 72.40704l-209.98144 209.98144-61.63456-61.63456a20.48 20.48 0 0 0-14.848-6.69696z" fill="#FFFFFF" p-id="11731"></path></svg>
+            </template>
+            Keep
+          </vs-sidebar-item>
+         
+          
+        </vs-sidebar-group>
+       
+        <template #footer>
+          <vs-row justify="space-between">
+            <vs-avatar>
+              <img src="/avatars/avatar-5.png" alt="">
+            </vs-avatar>
+
+            <vs-avatar badge-color="danger" badge-position="top-right">
+              <i class='bx bx-bell' ></i>
+
+              <template #badge>
+                28
+              </template>
+            </vs-avatar>
+          </vs-row>
+        </template>
+      </vs-sidebar>
     </div>
   </template>
 <script>
-export default {
-  data:() => ({
-    active: 0
-  })
-}
-</script>
+  export default {
+    data:() => ({
+      active: 'home',
+      activeSidebar: false
+    })
+  }
+  </script>
+
+        
