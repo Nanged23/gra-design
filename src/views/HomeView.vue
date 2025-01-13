@@ -1,9 +1,4 @@
-<script setup>
-import TheWelcome from '../components/TheWelcome.vue'
-</script>
-
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+  <vs-button :active="active == 0" @click="active = 0"> Active </vs-button>
 </template>
+<script setup></script>
