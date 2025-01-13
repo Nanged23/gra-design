@@ -48,7 +48,7 @@
                   fill="#7C8590" p-id="8002"></path>
               </svg>
             </template>
-            我手写我心
+            文字织梦，心随笔动
           </vs-sidebar-item>
         </template>
 
@@ -64,12 +64,7 @@
           </template>
           瞬间
         </vs-sidebar-item>
-        <vs-sidebar-item id="gallery" @click="$router.push('/indexPage/gallery')">
-          <template #icon>
-            <i class='bx bxl-facebook'></i>
-          </template>
-          画廊
-        </vs-sidebar-item>
+        
         <vs-sidebar-item id="todo" @click="$router.push('/indexPage/todo')">
           <template #icon>
             <i class='bx bxl-facebook'></i>

@@ -26,8 +26,7 @@ export default {
 
 <style scoped>
 .content {
-    position: relative;
-    margin-left: 270px;
+    position: relative; 
     margin-top: 60px;
     padding: 20px;
     transition: all 0.3s ease;
