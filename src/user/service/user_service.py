@@ -2,9 +2,9 @@
 网站个人信息相关
 """
 from flask import jsonify, request
-from ...basic.database import db
+from src.basic.database import db
 import bcrypt
-from ..utils.add_score import add_score
+from src.user.utils.add_score import add_score
 from sqlalchemy.orm import aliased
 from src.user.entity import User
 from src.user.entity import UserDetail

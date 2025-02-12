@@ -155,6 +155,7 @@ def delete_article(article_id, word_diff):
 def update_article(article_id, data, cover_file, word_diff):
     article = Article.query.get(article_id)
     if cover_file:
+        # TODO 先去删除对应的文章封面再新增
         article.cover_image = upload_img(cover_file)  # 调用 upload_img 函数
     for key, value in data.items():
         if hasattr(article, key):

@@ -1,7 +1,17 @@
 from flask import jsonify, request, Blueprint
-from ..service import article_service
+from src.cur_platform.article.service import article_service
 
 article_bp = Blueprint('article_bp', __name__, url_prefix='/article')
+
+
+@article_bp.route('/test', methods=['GET'])
+def test():
+    return jsonify({'msg': 'yes!'}), 200
+
+
+@article_bp.route('/test', methods=['POST'])
+def test1():
+    return jsonify({'msg': 'yes11!'}), 200
 
 
 @article_bp.route('/write', methods=['POST'])

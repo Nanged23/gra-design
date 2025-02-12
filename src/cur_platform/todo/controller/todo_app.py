@@ -1,5 +1,5 @@
 from flask import jsonify, request, Blueprint
-from ..service import todo_service
+from src.cur_platform.todo.service import todo_service
 
 todo_bp = Blueprint('todo_bp', __name__, url_prefix='/todo')
 

@@ -1,9 +1,9 @@
 from flask import jsonify, request, Blueprint
-from ..service.token import get_cookies
-from ..service.token import init_browser
-from ..service.token import get_qrcode
-from ..service.user import get_user_bookshelf
-from ..service.user import get_user_info
+from src.third_platform.weread.service.token import get_cookies
+from src.third_platform.weread.service.token import init_browser
+from src.third_platform.weread.service.token import get_qrcode
+from src.third_platform.weread.service.user import get_user_bookshelf
+from src.third_platform.weread.service.user import get_user_info
 
 weread_bp = Blueprint('weread', __name__, url_prefix="/weread")
 
