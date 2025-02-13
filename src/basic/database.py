@@ -5,20 +5,23 @@
 from flask_sqlalchemy import SQLAlchemy
 import redis
 import os
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 load_dotenv()
+# MySQL 的 ORM
 db = SQLAlchemy()
-# 创建Redis连接池
-pool = redis.ConnectionPool(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), db=0, decode_responses=True)
 
-# 创建Redis客户端实例
-redis_client = redis.Redis(connection_pool=pool)
+# Redis 连接
+parsed_url = urlparse(os.getenv('REDIS_REMOTE_URL'))
 
-mysql_address = 'mysql+pymysql://{}:{}@{}:{}/{}'.format(
-    os.getenv('MYSQL_USER'),
-    os.getenv('MYSQL_PASSWORD'),
-    os.getenv('MYSQL_HOST'),
-    os.getenv('MYSQL_PORT'),
-    os.getenv('MYSQL_DB')
+pool = redis.ConnectionPool(
+    host=parsed_url.hostname,
+    port=parsed_url.port,
+    password=parsed_url.password,
+    db=0,
+    decode_responses=True,
 )
+
+# 创建 Redis 客户端实例
+redis_client = redis.Redis(connection_pool=pool)

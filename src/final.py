@@ -9,7 +9,6 @@ from src.third_platform.douban.controller.douban_app import douban_bp
 from flask_cors import CORS
 import traceback
 from dotenv import load_dotenv
-from src.basic.database import mysql_address
 
 load_dotenv()
 bps = [
@@ -21,13 +20,13 @@ bps = [
 ]
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
-# app.config['SQLALCHEMY_DATABASE_URI'] = mysql_address
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("MYSQL_REMOTE_URL")
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'connect_args': {'ssl': {'ca': '/etc/ssl/cert.pem'}}
 }
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSON_AS_ASCII'] = False
+app.config['PROPAGATE_EXCEPTIONS'] = True
 db.init_app(app)
 for bp in bps:
     app.register_blueprint(bp)
@@ -40,21 +39,26 @@ def root():
 
 @app.errorhandler(404)
 def not_found(error):
-    requested_url = request.url
-    print(f"Requested URL not found: {requested_url}")  # 打印请求的 URL
-    return jsonify({"msg": "错误！", "data": {"route": f"访问路由：{requested_url}", "reason": error}}), 404
+    requested_path = request.path
+    return jsonify({
+        "msg": "错误！",
+        "data": {
+            "route": f"访问路由：{requested_path}",
+            "reason": str(error)
+        }
+    }), 404
 
 
 @app.before_request
 def before_first_request():
     with app.app_context():
-        # 在应用上下文中获取 api 地址并存储，方便其他蓝图调用
+        # 将增加积分的逻辑暴露给所有接口
         add_score_url = url_for("user_bp.add_score", _external=True)
         app.config["ADD_SCORE_API"] = add_score_url
 
 
 @app.errorhandler(Exception)
-def handle_exception():
+def handle_exception(e):
     print("======================⚠️：发生错误 ======================")
     tb = traceback.format_exc()  # 获取完整的堆栈跟踪信息
     print(tb)  # 打印到控制台
@@ -64,4 +68,4 @@ def handle_exception():
 
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True, host="0.0.0.0")
+    app.run(port=5000, debug=False, host="0.0.0.0")
