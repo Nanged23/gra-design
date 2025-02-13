@@ -32,6 +32,11 @@ for bp in bps:
     app.register_blueprint(bp)
 
 
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({'🎉 接口文档': 'https://nanged23.apifox.cn/'}), 200
+
+
 @app.before_request
 def before_first_request():
     with app.app_context():
