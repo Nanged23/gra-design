@@ -22,7 +22,7 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("MYSQL_REMOTE_URL")
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'connect_args': {'ssl': {'ca': '/etc/ssl/cert.pem'}}
+    'connect_args': {'ssl': {'ca': '/etc/secrets/cert.pem'}}
 }
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSON_AS_ASCII'] = False
