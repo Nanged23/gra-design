@@ -38,7 +38,6 @@ class UserDetail(db.Model, SerializerMixin):
     cur_time = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     create_time = db.Column(db.TIMESTAMP, default=cur_time)  # 创建时间，默认为当前时间
     modify_time = db.Column(db.TIMESTAMP, default=cur_time, onupdate=cur_time)  # 修改时间，默认为当前时间，并在记录更新时自动更新
-    # TODO 在这里调整传递给前端的参数
     serialize_rules = ('-create_time', '-modify_time', '-id', '-user_id', '-keep_password')
 
     def __repr__(self):

@@ -5,7 +5,6 @@ from ..service import code_verify
 user_bp = Blueprint('user_bp', __name__, url_prefix="/user")
 
 
-# TODO 设置每日只增加一次积分，不论当天登录多少次
 @user_bp.route('/login', methods=['POST'])
 def user_login():
     params = request.get_json()

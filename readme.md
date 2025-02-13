@@ -22,6 +22,6 @@
         - [ ] 对于微信的 token，在 redis 设置{ is_expire 的 boolean 字段，skey，vid } 每隔 30 天过期，首先查询 redis
           ，判断是否过期，不过期则返回 redis 数据，否则更新 redis
 
-> 测试 redis 和 mysql
-
-          文章的update需要删除原 cover
+> 不论是 onrender 还是本地，都使用远程数据库，定时调用脚本拉取到本地
+> 在本地创建了 /etc/secrets/cert.pem ，和远程同步
+> 在使用 onrender 作为正式服务时，将 redis 设置为内部接口

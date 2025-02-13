@@ -8,10 +8,9 @@ def export_redis_data_scan(redis_url, output_file="/Users/dongliwei/Desktop/文�
     """
     连接到远程 Redis 服务器并使用 SCAN 将所有数据导出到本地 JSON 文件。
     """
+    r = redis.from_url(redis_url)
     try:
-        r = redis.from_url(redis_url)
         r.ping()
-
         data = {}
         cursor = "0"  # 从游标 0 开始
         while cursor != 0:

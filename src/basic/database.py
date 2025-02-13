@@ -12,4 +12,5 @@ load_dotenv()
 # MySQL 的 ORM
 db = SQLAlchemy()
 # 创建 Redis 客户端实例
-redis_client = redis.from_url(os.getenv("REDIS_INNER_URL"))
+redis_client = redis.from_url(os.getenv("REDIS_REMOTE_URL"))
+# redis_client = redis.from_url(os.getenv("REDIS_INNER_URL"))

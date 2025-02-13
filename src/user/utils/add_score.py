@@ -9,7 +9,7 @@ def add_score(source, user_id):
     :param source: 调用者身份
     :return: 
     """
-    dic = {"/article/write": 1.0, "/user/login": 0.5}  # TODO 根据来源确定增加积分值
+    dic = {"/article/write": 1.0, "/user/login": 0.5}
     add_score_api = current_app.config.get("ADD_SCORE_API")
     try:
         score = dic.get(source.split('?')[0])

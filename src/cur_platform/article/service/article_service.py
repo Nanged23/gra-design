@@ -27,19 +27,32 @@ def handle_word_diff(word_diff, user_id):
         print(f"Redis 操作失败：{e}")
 
 
-def upload_img(cover):
-    auth = oss2.ProviderAuthV4(EnvironmentVariableCredentialsProvider())
-    endpoint = os.getenv('OSS_ENDPOINT')
-    region = os.getenv('OSS_REGION')
-    bucket = oss2.Bucket(auth, endpoint, os.getenv('OSS_BUCKET_NAME'), region=region)
+def delete_cover(relative_url):
+    bucket = init_oss()
+    bucket.delete_object(relative_url)
 
+
+def upload_cover(cover):
+    bucket = init_oss()
     filename = cover.filename
     ext = filename.rsplit('.', 1)[1].lower()  # 获取文件后缀名
     new_filename = str(uuid.uuid4()) + '.' + ext  # 生成唯一的文件名
     object_name = f'文章封面/{new_filename}'
     bucket.put_object(object_name, cover.read())
-    url = "https://" + os.getenv('OSS_BUCKET_NAME') + ".oss-" + os.getenv('OSS_REGION') + ".aliyuncs.com/" + object_name
+    url = "https://" + os.getenv('OSS_BUCKET_NAME') + ".oss-" + os.getenv(
+        'OSS_REGION') + ".aliyuncs.com/" + object_name
     return url
+
+
+def init_oss():
+    """
+    初始化 oss
+    """
+    auth = oss2.ProviderAuthV4(EnvironmentVariableCredentialsProvider())
+    endpoint = os.getenv('OSS_ENDPOINT')
+    region = os.getenv('OSS_REGION')
+    bucket = oss2.Bucket(auth, endpoint, os.getenv('OSS_BUCKET_NAME'), region=region)
+    return bucket
 
 
 def generate_slug(title, delimiter='-'):
@@ -84,7 +97,7 @@ def write_article(title, content, user_id, tags, cover, word_diff, summary_min_l
     if cover is None or cover == '':  # 加入默认文章封面
         cover = 'https://guli-college0.oss-cn-chengdu.aliyuncs.com/%E6%96%87%E7%AB%A0%E5%B0%81%E9%9D%A2/default_cover.png'
     else:
-        cover = upload_img(cover)
+        cover = upload_cover(cover)
     slug = generate_slug(title)
     excerpt = ''  # ai 摘要默认置空,在异步任务中会进行填充
     blog_post = Article(title=title, slug=slug, content=content, excerpt=excerpt,
@@ -143,6 +156,8 @@ def get_article(user_id, type, extra, default_len=20):
 
 def delete_article(article_id, word_diff):
     article = Article.query.filter_by(id=article_id).first()
+    cover_relative_url = '/'.join(article.cover.split('/')[-2:])
+    delete_cover(cover_relative_url)
     user_id = article.author_id
     if article is None:
         return jsonify({'msg': '文章不存在~'}), 400
@@ -154,9 +169,10 @@ def delete_article(article_id, word_diff):
 
 def update_article(article_id, data, cover_file, word_diff):
     article = Article.query.get(article_id)
+    cover_relative_url = '/'.join(article.cover.split('/')[-2:])
     if cover_file:
-        # TODO 先去删除对应的文章封面再新增
-        article.cover_image = upload_img(cover_file)  # 调用 upload_img 函数
+        delete_cover(cover_relative_url)
+        article.cover = upload_cover(cover_file)
     for key, value in data.items():
         if hasattr(article, key):
             setattr(article, key, value)

@@ -35,7 +35,6 @@ def send_email(email):
 
 def get_random_code(email, expiration=60):
     """
-    TODO 设置随机验证码，并存储在 redis 数据库
     :return:
     """
     value = ''.join([str(random.randint(0, 9)) for _ in range(6)])
