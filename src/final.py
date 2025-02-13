@@ -1,5 +1,5 @@
 import os
-from flask import Flask, url_for, jsonify
+from flask import Flask, url_for, jsonify, request
 from src.basic.database import db
 from src.third_platform.weread.controller.weread_app import weread_bp
 from src.user.controller.user_app import user_bp
@@ -27,6 +27,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'connect_args': {'ssl': {'ca': '/etc/ssl/cert.pem'}}
 }
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JSON_AS_ASCII'] = False
 db.init_app(app)
 for bp in bps:
     app.register_blueprint(bp)
@@ -35,6 +36,13 @@ for bp in bps:
 @app.route('/', methods=['GET'])
 def root():
     return jsonify({'🎉 接口文档': 'https://nanged23.apifox.cn/'}), 200
+
+
+@app.errorhandler(404)
+def not_found(error):
+    requested_url = request.url
+    print(f"Requested URL not found: {requested_url}")  # 打印请求的 URL
+    return jsonify({"msg": "错误！", "data": {"route": f"访问路由：{requested_url}", "reason": error}}), 404
 
 
 @app.before_request

@@ -21,7 +21,7 @@ def test3():
     try:
         r = redis.from_url("redis://red-cum665dumphs738deisg:6379")
         r.set('key', 'redis-py-dlw')
-        value = r.get('key')
+        value = r.get('key').decode('utf-8')
     except Exception as e:
         print(e)
         return jsonify({'msg': 'error'}), 500
