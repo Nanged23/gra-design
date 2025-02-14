@@ -51,6 +51,8 @@ def not_found(error):
 
 @app.before_request
 def before_first_request():
+    url = request.url
+    print(f"🚀 请求路径：{url}")
     with app.app_context():
         # 将增加积分的逻辑暴露给所有接口
         add_score_url = url_for("user_bp.add_score", _external=True)
