@@ -2,7 +2,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.utils import formataddr
 from flask import jsonify
-from src.basic.database import redis_client
+from src.basic.extensions import redis_client
 import random
 
 

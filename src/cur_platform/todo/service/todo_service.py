@@ -1,6 +1,6 @@
 from flask import jsonify
 
-from src.basic.database import db
+from src.basic.extensions import db
 from src.cur_platform.todo.entity import MemEvent
 
 

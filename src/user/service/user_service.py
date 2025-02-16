@@ -2,13 +2,13 @@
 网站个人信息相关
 """
 from flask import jsonify, request
-from src.basic.database import db
+from src.basic.extensions import db
 import bcrypt
 from src.user.utils.add_score import add_score
 from sqlalchemy.orm import aliased
 from src.user.entity import User
 from src.user.entity import UserDetail
-from src.basic.database import redis_client
+from src.basic.extensions import redis_client
 import random
 import string
 import pytz

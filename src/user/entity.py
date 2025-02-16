@@ -1,4 +1,4 @@
-from src.basic.database import db
+from src.basic.extensions import db
 import datetime
 import pytz
 from sqlalchemy_serializer import SerializerMixin

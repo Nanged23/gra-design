@@ -2,17 +2,18 @@ import os
 import re
 from pypinyin import lazy_pinyin
 from src.cur_platform.article.service.ai_service import get_summary
-import asyncio
 from src.cur_platform.article.entity import Article
-from flask import jsonify, request
-from src.basic.database import db
+from flask import jsonify, request, after_this_request
+from src.basic.extensions import db, executor
 import oss2
 from oss2.credentials import EnvironmentVariableCredentialsProvider
 import uuid
 from dotenv import load_dotenv
 from src.user.utils.add_score import add_score
-from src.basic.database import redis_client
+from src.basic.extensions import redis_client
 from collections import defaultdict
+from sqlalchemy import and_
+from sqlalchemy.sql.expression import func
 
 load_dotenv()
 
@@ -64,31 +65,24 @@ def generate_slug(title, delimiter='-'):
     """
     # 将中文转换为拼音
     pinyin_list = lazy_pinyin(title)
-
-    # 将拼音列表合并成一个字符串，并正常化
     normalized_text = ''.join(pinyin_list)
-
-    # 移除非字母数字字符，保留连字符和下划线
     stripped_text = re.sub(r'[^a-zA-Z0-9\s_-]', '', normalized_text)
-
-    # 替换空格为指定的分隔符，并将结果转换为小写
     slug = re.sub(r'\s+', delimiter, stripped_text).strip().lower()
-
-    # 移除多余的分隔符
     final_slug = re.sub(r'[-_]+', delimiter, slug)
-
     return final_slug
 
 
-def generate_excerpt(blog_id):
+def generate_excerpt(content, article_id):
     """
-    根据文章 id 查询文章内容，然后生成文章摘要
-    :param blog_id: 
-    :return: 
+    根据 content 生成文章摘要，并找到对应的文章，更新其字段
+    :param content: 原文章内容
+    :param article_id: 文章 id
+    :return:
     """
-    content = Article.query.filter_by(id=blog_id).first().content
     excerpt = get_summary(content)
-    return excerpt
+    Article.query.filter_by(article_id=article_id).update({"excerpt": excerpt})
+    db.session.commit()
+    return
 
 
 def write_article(title, content, user_id, tags, cover, word_diff, summary_min_len=500):
@@ -104,25 +98,47 @@ def write_article(title, content, user_id, tags, cover, word_diff, summary_min_l
                         author_id=user_id, tags=tags, cover=cover)
     db.session.add(blog_post)
     db.session.commit()
+    article_id = blog_post.id
     add_score(request.full_path, user_id)
     handle_word_diff(word_diff, user_id)
     # 创建异步任务，但不等待它完成
     if len(content) >= summary_min_len:
-        asyncio.create_task(generate_excerpt(blog_post.id))
+        @after_this_request
+        def after_request(response):
+            executor.submit(generate_excerpt, content, article_id)
+            return response
+
     return jsonify({'msg': '🎉 恭喜你，新写了一篇文章～'}), 200
 
 
-def get_article(user_id, type, extra, default_len=20):
+def get_article(user_id, type, extra, default_len=20, per_page=5, tag=None):
     """
     :param user_id: 用户 id
     :param type: 表明是获取所有文章还是单篇文章
     :param extra: 当 type 为 0 时，表示当前页码；当 type 为 1 时，表示文章 id
     :param default_len:默认缩略时，截取的长度
+    :param per_page:每页展示数量
+    :param tag:获取某一标签下的分页文章
     :return:
     """
     if type == '0':  # 获取当前页码的所有文章
-        per_page = 5  # 每页显示的文章数
-        articles = Article.query.filter_by(author_id=user_id).paginate(page=int(extra), per_page=per_page)
+        # 每页显示的文章数
+        if tag is None:
+            articles = Article.query.filter_by(author_id=user_id).paginate(page=int(extra), per_page=per_page)
+        else:
+            # 将 tags 字段中的逗号等进行转义，防止拼凑 sql 出错误
+            escaped_tag = re.escape(tag)
+
+            # 构建正则表达式
+            regex_pattern = rf"(^|,){escaped_tag}(,|$)"
+            # 构建查询
+            articles = Article.query.filter(
+                and_(
+                    Article.author_id == user_id,
+                    Article.tags.op('REGEXP')(regex_pattern)
+                )
+            ).paginate(page=int(extra), per_page=per_page)
+
         all_articles = [article.to_dict() for article in articles.items]
         for i in all_articles:  # 缩略文本用于展示
             i['content'] = i['content'][:default_len] + '...' if len(i['content']) > default_len else i['content']
@@ -206,6 +222,9 @@ def get_word_count(user_id):
 
 
 def get_word_cloud(user_id):
+    """
+    获取标签词云图
+    """
     articles = Article.query.filter_by(author_id=user_id).all()
     frequency = defaultdict(int)
     for article in articles:
@@ -214,3 +233,7 @@ def get_word_cloud(user_id):
             if tag != '':
                 frequency[tag] += 1
     return jsonify({"msg": "success", "data": frequency}), 200
+
+
+def get_by_tags(user_id, extra, tag):
+    return get_article(user_id, "0", extra, tag=tag)

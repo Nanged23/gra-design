@@ -16,6 +16,14 @@ def write_article():
     return article_service.write_article(title, content, user_id, tags, cover, word_diff)
 
 
+@article_bp.route('/delete', methods=['GET'])
+def delete_article():
+    args = request.args
+    article_id = args.get('article_id')
+    word_diff = args.get('word_diff')
+    return article_service.delete_article(article_id, word_diff)
+
+
 @article_bp.route('/get', methods=['GET'])
 def get_article():
     args = request.args
@@ -30,12 +38,13 @@ def get_article():
     return article_service.get_article(user_id, type, extra)
 
 
-@article_bp.route('/delete', methods=['GET'])
-def delete_article():
+@article_bp.route('/get_by_tags', methods=['GET'])
+def get_by_tags():
     args = request.args
-    article_id = args.get('article_id')
-    word_diff = args.get('word_diff')
-    return article_service.delete_article(article_id, word_diff)
+    user_id = args.get('user_id')
+    extra = args.get('extra')
+    tag = args.get('tag')
+    return article_service.get_by_tags(user_id, extra, tag)
 
 
 @article_bp.route('/update', methods=['POST'])

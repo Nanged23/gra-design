@@ -1,4 +1,4 @@
-from src.basic.database import db
+from src.basic.extensions import db
 import datetime
 import pytz
 from sqlalchemy_serializer import SerializerMixin
@@ -8,7 +8,7 @@ class MemEvent(db.Model, SerializerMixin):
     __tablename__ = 'mem_event'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # 自增主键
-    user_id = db.Column(db.BigInteger, nullable=False)  # 用户Id
+    user_id = db.Column(db.Integer, nullable=False)  # 用户Id
     event_name = db.Column(db.String(255), nullable=False)  # 纪念日事件名称
     event_date = db.Column(db.TIMESTAMP, nullable=False)  # 纪念日日期
     description = db.Column(db.Text)  # 事件描述
