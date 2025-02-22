@@ -25,3 +25,27 @@ class MemEvent(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<MemEvent {self.event_name} on {self.event_date}>"
+
+
+class Todo(db.Model, SerializerMixin):
+    __tablename__ = 'todo'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # 自增主键
+    user_id = db.Column(db.Integer, nullable=False)  # 用户Id
+    title = db.Column(db.Text)
+    tags = db.Column(db.String(255))
+    cur_time = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+    create_time = db.Column(db.TIMESTAMP, default=cur_time)  # 创建时间，默认为当前时间
+    set_time = db.Column(db.TIMESTAMP)
+    finish_time = db.Column(db.TIMESTAMP)
+    serialize_rules = ('-create_time', '-id', '-user_id')
+
+    def __init__(self, user_id, title, tags, set_time, finish_time):
+        self.user_id = user_id
+        self.title = title
+        self.tags = tags
+        self.set_time = set_time
+        self.finish_time = finish_time
+
+    def __repr__(self):
+        return f"<Todo {self.title} on {self.finish_time}>"
