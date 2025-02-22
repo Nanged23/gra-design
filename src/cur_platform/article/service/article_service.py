@@ -86,8 +86,11 @@ def generate_excerpt(content, article_id):
 
 
 def write_article(title, content, user_id, tags, cover, word_diff, summary_min_len=500):
+    # TODO 增加月、年、周的文章书写报告
     if tags is None or tags == '':
         tags = ''  # TODO 使用 AI 生成标签
+    # TODO 使用正则在英文单词前后加空格
+    # 上述 2 个功能统一为 [ AI帮忙 ]
     if cover is None or cover == '':  # 加入默认文章封面
         cover = 'https://guli-college0.oss-cn-chengdu.aliyuncs.com/%E6%96%87%E7%AB%A0%E5%B0%81%E9%9D%A2/default_cover.png'
     else:
