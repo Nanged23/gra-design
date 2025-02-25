@@ -16,3 +16,5 @@ SQLAlchemy==2.0.29
 sqlalchemy_serializer==1.4.22
 gunicorn==23.0.0
 pymysql==1.1.1
+asgiref==3.8.1
+asyncio==3.4.3

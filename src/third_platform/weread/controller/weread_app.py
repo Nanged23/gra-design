@@ -1,49 +1,58 @@
-from flask import jsonify, request, Blueprint
-from src.third_platform.weread.service.token import get_cookies
-from src.third_platform.weread.service.token import init_browser
-from src.third_platform.weread.service.token import get_qrcode
-from src.third_platform.weread.service.user import get_user_bookshelf
-from src.third_platform.weread.service.user import get_user_info
+from flask import jsonify, request, Blueprint, g, current_app
+from src.third_platform.weread.service import authentication, weread_service
+from src.basic.extensions import executor
+import pyppeteer
+import threading
 
 weread_bp = Blueprint('weread', __name__, url_prefix="/weread")
 
 browser_instance = None
+browser_lock = threading.Lock()
+browser_initialized = False
 
+
+# 登录整体流程介绍：请求登录->开启无头浏览器->从官网获取登录二维码->(login函数完毕)->扫码认证会在无头浏览器的官网网页中留下 cookie->从浏览器中截获 cookie->完成登录(get_cookies函数)
 
 @weread_bp.route('/login', methods=['GET'])
 async def login():
     """
     经检测，登录所需二维码约 3Kb，并不大，选择直接传输；如后续不满足性能要求，可考虑其他方案
-    :return:
     """
-    global browser_instance
-    browser_instance = await init_browser(browser_instance)
-    qr_code_data = await get_qrcode(browser_instance)
-
-    return jsonify({'qrcode': qr_code_data}), 200
+    browser_instance = current_app.browser_instance
+    if not browser_instance:
+        return jsonify({"mes": "未获取到浏览器实例，！"}), 500
+    else:
+        # qr_code_data = await authentication.get_qrcode(browser_instance)
+        qr_code_data = await executor.future(executor.submit(authentication.get_qrcode, browser_instance))
+        return jsonify({'qrcode': qr_code_data}), 200
 
 
 @weread_bp.route('/cookies', methods=['POST'])
 async def get_cookies():
     """
-    :return:传递给前端所需认证信息，之后的请求都携带本凭证
+    点击页面上的“我已扫码”就调用本函数，尝试获取用户信息
+    :return:传递给前端所需认证信息，前端需保存为 cookie 存储，并在之后的请求都携带本凭证
     """
-    global browser_instance
     if not browser_instance:
         return jsonify("未获取到浏览器实例，！"), 500
-    specific_cookies = await get_cookies(browser_instance)
+    specific_cookies = await authentication.get_cookies(browser_instance)
     # TODO 需要存储在 redis 中
     return jsonify(specific_cookies), 200
 
 
 @weread_bp.route('/info', methods=['POST'])
-def get_bookshelf():
+def get_info():
+    # 用户头像，昵称，图书的：图标 书名
+    # TODO 期待返回内容：作者 上次阅读时间，共阅读时长，书籍简介
     vid = request.cookies.get('vid')
     skey = request.cookies.get('skey')
-    print(vid, skey)
-    info1 = get_user_bookshelf(vid, skey)
-    info2 = get_user_info(vid, skey)
-    print(info1, info2)
-    info2.update(info1)
-    response = jsonify(info2)
-    return response, 200
+    vid = "442726869"
+    skey = "RDz5qG_J"
+    bookshelf_info = weread_service.get_user_bookshelf(vid, skey)
+    user_info = weread_service.get_user_info(vid, skey)
+    return jsonify({"mes": "success", "data": {"user_info": user_info, "bookshelf_info": bookshelf_info}}), 200
+
+
+@weread_bp.route('/summary', methods=['POST'])
+def get_summary():
+    pass

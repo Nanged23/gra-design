@@ -1,8 +1,13 @@
 # 根据用户的vid 和 skey 获取用户相关信息
 import requests
+import json
+import pyppeteer
+
+browser_instance = None
 
 
 def request(vid, skey, url, type):
+    # 封装的基础请求函数
     headers = {
         "Host": "i.weread.qq.com",
         "Connection": "keep-alive",
@@ -51,7 +56,39 @@ def get_user_bookshelf(vid, skey):
             } for book in response["books"]
         ]
     }
-    return result
+
+    info2 = result
+
+    bookshelf_info = {
+        "folders": [],
+        "books": []
+    }
+
+    folder_book_ids = set()  # 创建一个集合来存储已经添加到文件夹的 bookId
+
+    # 处理 folders 字段
+    for archive_item in info2["archive"]:
+        folder = {
+            "name": archive_item["name"],
+            "books": []
+        }
+        for book_id in archive_item["bookIds"]:
+            for book in info2["books"]:
+                if book["bookId"] == book_id:
+                    folder["books"].append(book)
+                    folder_book_ids.add(book_id)  # 将 bookId 添加到集合中
+                    break
+        bookshelf_info["folders"].append(folder)
+
+    # 处理顶层的 books 字段，只添加不在文件夹中的图书
+    for book in info2["books"]:
+        if book["bookId"] not in folder_book_ids:  # 检查 bookId 是否在集合中
+            bookshelf_info["books"].append(book)
+
+    # 将结果转换为 JSON 字符串并打印 (ensure_ascii=False 保证中文不被转义)
+    result_json = json.dumps(bookshelf_info, indent=2, ensure_ascii=False)
+
+    return json.loads(result_json)
 
 
 def get_user_info(vid, skey):

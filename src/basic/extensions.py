@@ -5,7 +5,6 @@
 from flask_sqlalchemy import SQLAlchemy
 import redis
 import os
-from urllib.parse import urlparse
 from dotenv import load_dotenv
 from flask_executor import Executor
 
