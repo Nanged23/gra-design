@@ -18,13 +18,14 @@ async def login():
     """
     经检测，登录所需二维码约 3Kb，并不大，选择直接传输；如后续不满足性能要求，可考虑其他方案
     """
-    browser_instance = current_app.browser_instance
-    if not browser_instance:
-        return jsonify({"mes": "未获取到浏览器实例，！"}), 500
-    else:
-        # qr_code_data = await authentication.get_qrcode(browser_instance)
-        qr_code_data = await executor.future(executor.submit(authentication.get_qrcode, browser_instance))
-        return jsonify({'qrcode': qr_code_data}), 200
+    try:
+        global browser_instance
+        browser_instance = await authentication.init_browser(browser_instance)
+        qr_code_data = await authentication.get_qrcode(browser_instance)
+        return jsonify({"mes": "success", "data": {"qrcode": qr_code_data}}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"mes": "获取二维码超时"}), 500
 
 
 @weread_bp.route('/cookies', methods=['POST'])
@@ -37,7 +38,7 @@ async def get_cookies():
         return jsonify("未获取到浏览器实例，！"), 500
     specific_cookies = await authentication.get_cookies(browser_instance)
     # TODO 需要存储在 redis 中
-    return jsonify(specific_cookies), 200
+    return jsonify({"mes": "success", "data": {"cookies": specific_cookies}}), 200
 
 
 @weread_bp.route('/info', methods=['POST'])
@@ -47,10 +48,10 @@ def get_info():
     vid = request.cookies.get('vid')
     skey = request.cookies.get('skey')
     vid = "442726869"
-    skey = "RDz5qG_J"
+    skey = "XzEXAnft"
     bookshelf_info = weread_service.get_user_bookshelf(vid, skey)
     user_info = weread_service.get_user_info(vid, skey)
-    return jsonify({"mes": "success", "data": {"user_info": user_info, "bookshelf_info": bookshelf_info}}), 200
+    return jsonify({"msg": "success", "data": {"user_info": user_info, "bookshelf_info": bookshelf_info}}), 200
 
 
 @weread_bp.route('/summary', methods=['POST'])

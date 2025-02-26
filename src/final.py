@@ -1,8 +1,4 @@
 import os
-
-import asyncio
-
-import pyppeteer
 from flask import Flask, url_for, jsonify, send_file
 from src.basic.extensions import db, executor
 from src.user.controller.user_app import user_bp
@@ -14,7 +10,6 @@ from src.third_platform.douban.controller.douban_app import douban_bp
 from flask_cors import CORS
 import traceback
 from dotenv import load_dotenv
-import threading
 
 # 创建 Flask 应用
 load_dotenv()
@@ -63,29 +58,17 @@ def handle_exception(e):
     return jsonify({'msg': '服务器内部错误'}), 500
 
 
-browser_lock = threading.Lock()
+has_first_request = False
 
 
-def init_browser_sync():
-    """在主线程中同步初始化浏览器实例，并存储在 Flask 的 current_app 中"""
-    # 确保在应用上下文中运行
-    with app.app_context():
-        try:
-            app.browser_instance = asyncio.get_event_loop().run_until_complete(
-                pyppeteer.launch(
-                    headless=True,
-                    executablePath='/Users/dongliwei/Downloads/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing'
-                )
-            )
-
-            print("Browser initialized synchronously in main thread")
-        except Exception as e:
-            print(f"Error initializing browser synchronously: {e}")
-            app.browser_instance = None
+@app.before_request
+def before_first_request():
+    global has_first_request
+    if not has_first_request:
+        with app.app_context():  # 将增加积分的逻辑暴露给所有接口
+            app.config["ADD_SCORE_API"] = url_for("user_bp.add_score", _external=True)
+        has_first_request = True
 
 
-with app.app_context():
-    app.config["ADD_SCORE_API"] = app.url_for("user_bp.add_score", _external=True)
-    init_browser_sync()
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

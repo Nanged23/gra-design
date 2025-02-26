@@ -93,7 +93,7 @@ def get_user_by_id(user_id):
         .outerjoin(detail_alias, user_alias.id == detail_alias.user_id) \
         .filter(user_alias.id == user_id).first()
 
-    return jsonify({"mes": "success", "data": [_.to_dict() for _ in results]}), 200
+    return jsonify({"msg": "success", "data": [_.to_dict() for _ in results]}), 200
 
 
 def update_user_by_id(data):
@@ -152,9 +152,9 @@ def get_daily_score(user_id):
         # 获取每日积分
         hash_data = redis_client.hgetall(f'score:user_{user_id}')
         if hash_data:
-            return jsonify({"mes": "success", "data": {"heatMap": hash_data, "lastLoginTime": last_login_time}}), 200
+            return jsonify({"msg": "success", "data": {"heatMap": hash_data, "lastLoginTime": last_login_time}}), 200
         else:
-            return jsonify({"mes": "每日活动情况为空，请检查 user_id "}), 404
+            return jsonify({"msg": "每日活动情况为空，请检查 user_id "}), 404
     except Exception as e:
         print(e)
-        return jsonify({"mes": "服务器[查询每日活动情况]异常，请稍后再试"}), 500
+        return jsonify({"msg": "服务器[查询每日活动情况]异常，请稍后再试"}), 500

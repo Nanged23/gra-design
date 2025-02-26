@@ -1,14 +1,15 @@
 # 获取用户 token
 import asyncio
 from pyppeteer import launch
-from flask import current_app
 
 
 async def init_browser(browser_instance):
     if not browser_instance:
         # 初始化浏览器实例
         browser_instance = await launch(
-            headless=True,
+            headless=True, handleSIGINT=False,
+            handleSIGTERM=False,
+            handleSIGHUP=False,
             executablePath='/Users/dongliwei/Downloads/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing'
         )
         return browser_instance
@@ -19,23 +20,22 @@ async def get_qrcode(browser_instance):
     前端发起请求，通过使用无头浏览器爬取到官网的登录二维码，最终传递给前端
     :return: 登录二维码
     """
-    with current_app.app_context():
-        page = await browser_instance.newPage()
-        await page.goto('https://r.qq.com#login', {'waitUntil': 'load'})
+    page = await browser_instance.newPage()
+    await page.goto('https://r.qq.com#login', {'waitUntil': 'load'})
 
-        # 等待二维码加载完成，这里可以根据实际情况调整选择器和等待时间
-        await page.waitForSelector('img[src^="data:image/png;base64"]')
+    # 等待二维码加载完成，这里可以根据实际情况调整选择器和等待时间
+    await page.waitForSelector('img[src^="data:image/png;base64"]')
 
-        # 获取二维码图像
-        qrcode_data = await page.evaluate('''() => {
-            const img = document.querySelector('img[src^="data:image/png;base64"]');
-            return img ? img.src : null;
-        }''')
+    # 获取二维码图像
+    qrcode_data = await page.evaluate('''() => {
+        const img = document.querySelector('img[src^="data:image/png;base64"]');
+        return img ? img.src : null;
+    }''')
 
-        if qrcode_data:
-            return qrcode_data
-        else:
-            return
+    if qrcode_data:
+        return qrcode_data
+    else:
+        return
 
 
 async def get_cookies(browser_instance, max_retries=5):
