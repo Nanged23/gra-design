@@ -57,3 +57,8 @@ def get_info():
 @weread_bp.route('/summary', methods=['POST'])
 def get_summary():
     pass
+
+
+@weread_bp.route('/book_detail', methods=['GET'])
+def get_book_detail():
+    pass

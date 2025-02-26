@@ -8,6 +8,22 @@ from src.user.entity import UserDetail
 from math import ceil
 
 
+def handle_answer(process, entry):
+    process = re.sub(r'\s+', '', process)
+    match = re.search(r'-(.*?)/(\d+)', process)
+    totalPage = ceil(int(match.group(2).strip()) / 15)
+    num = int(match.group(1).strip())
+    current_page = ceil(num / 15) if num > 15 else 1
+    answer = {
+        "msg": "success",
+        "process": process,
+        "currentPage": current_page,
+        "totalPage": totalPage,
+        "data": entry
+    }
+    return jsonify(answer), 200
+
+
 def send_request(url):
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
@@ -54,19 +70,7 @@ def get_books(id, category, page, sort):
     entry = json.dumps(entry, ensure_ascii=False)
 
     process = tree.xpath('/html/body/div[3]/div[1]/div[2]/div[1]/div/div[2]/span/text()')
-    process = re.sub(r'\s+', '', process[0])
-    match = re.search(r'-(.*?)/(\d+)', process)
-    totalPage = ceil(int(match.group(2).strip()) / 15)
-    num = int(match.group(1).strip())
-    current_page = ceil(num / 15) if num > 15 else 1
-    answer = {
-        "msg": "success",
-        "process": process,
-        "currentPage": current_page,
-        "totalPage": totalPage,
-        "data": entry
-    }
-    return jsonify(answer), 200
+    return handle_answer(process[0], entry)
 
 
 def get_movies(id, category, page, sort):
@@ -112,19 +116,7 @@ def get_movies(id, category, page, sort):
         })
     entry = json.dumps(entry, ensure_ascii=False)
     process = tree.xpath('/html/body/div[3]/div[1]/div[2]/div[1]/div[1]/div[4]/span/text()')
-    process = re.sub(r'\s+', '', process[0])
-    match = re.search(r'-(.*?)/(\d+)', process)
-    totalPage = ceil(int(match.group(2).strip()) / 15)
-    num = int(match.group(1).strip())
-    current_page = ceil(num / 15) if num > 15 else 1
-    answer = {
-        "msg": "success",
-        "process": process,
-        "currentPage": current_page,
-        "totalPage": totalPage,
-        "data": entry
-    }
-    return jsonify(answer), 200
+    return handle_answer(process[0], entry)
 
 
 def get_user(id):
@@ -146,6 +138,6 @@ def get_user(id):
 
 def movie_data():
     """
-    :return:TODO 统计用户各类型的观影频次，以便生成统计图。当用户首次登录时，会初始化数据，之后每次登录，则增量更新观影情况
+    :return:TODO 统计用户各类型的观影频次（豆瓣自带的标签统计不好用），以便生成统计图。当用户首次登录时，会初始化数据，之后每次登录，则增量更新观影情况
     """
     pass
