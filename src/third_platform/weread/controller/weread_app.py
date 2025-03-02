@@ -1,7 +1,5 @@
-from flask import jsonify, request, Blueprint, g, current_app
+from flask import jsonify, request, Blueprint
 from src.third_platform.weread.service import authentication, weread_service
-from src.basic.extensions import executor
-import pyppeteer
 import threading
 
 weread_bp = Blueprint('weread', __name__, url_prefix="/weread")
@@ -47,8 +45,6 @@ def get_info():
     # TODO 期待返回内容：作者 上次阅读时间，共阅读时长，书籍简介
     vid = request.cookies.get('vid')
     skey = request.cookies.get('skey')
-    vid = "442726869"
-    skey = "XzEXAnft"
     bookshelf_info = weread_service.get_user_bookshelf(vid, skey)
     user_info = weread_service.get_user_info(vid, skey)
     return jsonify({"msg": "success", "data": {"user_info": user_info, "bookshelf_info": bookshelf_info}}), 200
@@ -56,9 +52,15 @@ def get_info():
 
 @weread_bp.route('/summary', methods=['POST'])
 def get_summary():
-    pass
+    vid = request.cookies.get('vid')
+    skey = request.cookies.get('skey')
+    type = request.get_json().get('type')
+    return weread_service.get_summary(vid, skey, type)
 
 
 @weread_bp.route('/book_detail', methods=['GET'])
 def get_book_detail():
-    pass
+    vid = request.cookies.get('vid')
+    skey = request.cookies.get('skey')
+    book_id = request.get_json().get('book_id')
+    return weread_service.get_book_detail(vid, skey, book_id)
