@@ -110,6 +110,13 @@ def extract_json(template, json_data):
                     final_sub_json[key] = None  # 如果需要，可以省略这个键
 
     traverse_and_extract(template, json_data, final_json)
+    if "readLongest" in final_json and isinstance(final_json["readLongest"], list):
+        final_json["readLongest"] = final_json["readLongest"][:3]
+
+        # 特殊处理 preferTime
+    if "preferTime" in final_json and isinstance(final_json["preferTime"], list):
+        final_json["preferTime"] = final_json["preferTime"][-6:] + final_json["preferTime"][:-6]
+
     return final_json
 
 
