@@ -281,5 +281,4 @@ def get_time_preference(user_id):
     for hour, count in time_slots:
         slot = get_time_slot(hour)
         result[slot] = result.get(slot, 0) + count
-    print(result)
     return jsonify({"msg": "success", "data": result}), 200

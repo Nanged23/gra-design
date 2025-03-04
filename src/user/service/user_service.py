@@ -44,7 +44,7 @@ def login(email, password):
     # 在增加登录积分之前，查询当天是否已有分数，有则证明已经登录过
     date_str = datetime.now().strftime("%Y%m%d")
     key = f"score:user_{user_id}"
-    if redis_client.hget(key, date_str) == '0':
+    if redis_client.hget(key, date_str).decode('utf-8') == '0':
         add_score(request.full_path, user_id)
 
     # 更新 lastLoginTime
@@ -152,7 +152,23 @@ def get_daily_score(user_id):
         # 获取每日积分
         hash_data = redis_client.hgetall(f'score:user_{user_id}')
         if hash_data:
-            return jsonify({"msg": "success", "data": {"heatMap": hash_data, "lastLoginTime": last_login_time}}), 200
+            result_dict = {}
+
+            # 遍历从 Redis 中获取的数据
+            for field_bytes, value_bytes in hash_data.items():
+                # 解码字节串
+                field = field_bytes.decode('utf-8')
+                value = value_bytes.decode('utf-8')
+
+                # 尝试将 value 转换为整数，如果转换失败，则保持原样
+                try:
+                    value = int(value)
+                except ValueError:
+                    pass  # 如果 value 不能转换为整数，则保持字符串形式
+
+                # 将 field 和 value 添加到字典中
+                result_dict[field] = value
+            return jsonify({"msg": "success", "data": {"heatMap": result_dict, "lastLoginTime": last_login_time}}), 200
         else:
             return jsonify({"msg": "每日活动情况为空，请检查 user_id "}), 404
     except Exception as e:
