@@ -4,6 +4,8 @@ from src.cur_platform.todo.service import todo_service
 todo_bp = Blueprint('todo_bp', __name__, url_prefix='/todo')
 
 
+# TODO todo的 deadline 通知功能
+
 @todo_bp.route('/record_memday', methods=['POST'])
 def record_day():
     # TODO 纪念日新增类别便签，以便展示对应背景

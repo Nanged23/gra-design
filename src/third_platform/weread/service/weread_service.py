@@ -327,7 +327,6 @@ def get_book_detail(vid, skey, book_id):
             }
         }
     ]
-    # TODO 根据上述 dic 调用 extract_data 函数，并整合 json 返回
     book_detail = {}
     for i in dic:
         book_detail.update(extract_json(i['template'], android_request(vid, skey, i["url"])))

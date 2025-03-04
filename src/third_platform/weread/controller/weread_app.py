@@ -41,8 +41,6 @@ async def get_cookies():
 
 @weread_bp.route('/info', methods=['POST'])
 def get_info():
-    # 用户头像，昵称，图书的：图标 书名
-    # TODO 期待返回内容：作者 上次阅读时间，共阅读时长，书籍简介
     vid = request.cookies.get('vid')
     skey = request.cookies.get('skey')
     bookshelf_info = weread_service.get_user_bookshelf(vid, skey)

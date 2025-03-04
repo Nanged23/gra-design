@@ -240,3 +240,46 @@ def get_word_cloud(user_id):
 
 def get_by_tags(user_id, extra, tag):
     return get_article(user_id, "0", extra, tag=tag)
+
+
+def get_most_viewed(user_id, limit=3):
+    articles = (
+        Article.query.filter_by(author_id=user_id)
+        .order_by(Article.views_count.desc())
+        .limit(limit)
+        .all()
+    )
+    all_articles = [article.to_dict() for article in articles]
+    return jsonify({"msg": "success", "data": all_articles}), 200
+
+
+def get_time_preference(user_id):
+    """分析用户写作偏好时段，按凌晨、上午、下午、晚上划分"""
+
+    def get_time_slot(hour):
+        if 0 <= hour <= 5:
+            return "凌晨"
+        elif 6 <= hour <= 11:
+            return "上午"
+        elif 12 <= hour <= 17:
+            return "下午"
+        else:
+            return "晚上"
+
+    time_slots = (
+        db.session.query(
+            func.hour(Article.modify_time),
+            func.count(Article.id)
+        )
+        .filter(Article.author_id == user_id)
+        .group_by(func.hour(Article.modify_time))
+        .all()
+    )
+
+    # 将结果转换为字典，并应用时间区间划分
+    result = {}
+    for hour, count in time_slots:
+        slot = get_time_slot(hour)
+        result[slot] = result.get(slot, 0) + count
+    print(result)
+    return jsonify({"msg": "success", "data": result}), 200

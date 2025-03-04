@@ -10,10 +10,10 @@ def add_score(source, user_id):
     :return: 
     """
     dic = {
-        "/article/write": 1.5,
-        "/user/login": 0.5,
-        "/moment/write": 1,
-        "/todo/record_memday": 1
+        "/article/write": 1.5,  # 写文章
+        "/user/login": 0.5,  # 登录
+        "/moment/write": 1,  # 写说说
+        "/todo/record_memday": 1  # 记录纪念日
     }
     add_score_api = current_app.config.get("ADD_SCORE_API")
     try:

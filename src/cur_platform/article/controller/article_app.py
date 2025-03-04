@@ -66,3 +66,15 @@ def get_word_cloud():
 def get_word_count():
     user_id = request.args.get('user_id')
     return article_service.get_word_count(user_id)
+
+
+@article_bp.route('/most_viewed', methods=['GET'])
+def get_most_viewed():
+    user_id = request.args.get('user_id')
+    return article_service.get_most_viewed(user_id)
+
+
+@article_bp.route('/time_preference', methods=['GET'])
+def get_time_preference():
+    user_id = request.args.get('user_id')
+    return article_service.get_time_preference(user_id)
