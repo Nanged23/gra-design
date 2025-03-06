@@ -24,3 +24,9 @@ def get_user_info():
 def geta():
     douban_service.temp()
     return jsonify({"mes": 1}), 200
+
+
+@douban_bp.route('/summary', methods=['GET'])
+def get_summary():
+    user_id = request.args.get('user_id')
+    return douban_service.get_summary(user_id)

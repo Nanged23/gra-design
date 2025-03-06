@@ -5,7 +5,11 @@ from flask import jsonify
 from src.user.entity import UserDetail
 from src.basic.extensions import db
 from src.third_platform.douban.entity import Douban
-
+import datetime
+from sqlalchemy import func
+from dateutil.relativedelta import relativedelta
+import pytz
+from sqlalchemy import text
 
 def get_data(user_id, category, page, per_page=15):
     """
@@ -37,13 +41,6 @@ def get_user(user_id):
     response = requests.get(url, headers=headers)
     response.encoding = 'utf-8'
     return jsonify({"msg": "success", "data": response.json()}), 200
-
-
-def movie_data():
-    """
-    :return:TODO 统计用户各类型的观影频次（豆瓣自带的标签统计不好用），以便生成统计图。当用户首次登录时，会初始化数据，之后每次登录，则增量更新观影情况
-    """
-    pass
 
 
 def temp():
@@ -90,3 +87,127 @@ def temp():
             db.session.commit()
         except Exception:
             continue
+
+
+def get_summary(user_id):
+    summary = {}
+
+    # 1. 想看最久还没看的电影、图书
+    oldest_wish_movie = Douban.query.filter_by(user_id=user_id, row_type='-2').order_by(Douban.date).first()
+    oldest_wish_book = Douban.query.filter_by(user_id=user_id, row_type='-1').order_by(Douban.date).first()
+    summary['oldest_wish_movie'] = oldest_wish_movie.to_dict() if oldest_wish_movie else None
+    summary['oldest_wish_book'] = oldest_wish_book.to_dict() if oldest_wish_book else None
+
+    # 2. 想看的电影中，最多的前三个标签情况 & # 6. 看过的电影中，最多的前三个标签
+
+
+    def get_top_tags(row_type, limit=3):
+        query = text("""
+            WITH RECURSIVE tag_cte AS (
+                SELECT
+                    SUBSTRING_INDEX(content_type, ',', 1) AS tag,
+                    -- 使用 CHAR_LENGTH() 替代 LENGTH()
+                    SUBSTRING(content_type, CHAR_LENGTH(SUBSTRING_INDEX(content_type, ',', 1)) + 2) AS remaining,
+                    id
+                FROM douban
+                WHERE user_id = :user_id AND row_type = :row_type AND content_type IS NOT NULL
+                
+                UNION ALL
+                
+                SELECT
+                    SUBSTRING_INDEX(remaining, ',', 1) AS tag, 
+                    SUBSTRING(remaining, CHAR_LENGTH(SUBSTRING_INDEX(remaining, ',', 1)) + 2) AS remaining,
+                    id
+                FROM tag_cte
+                WHERE remaining != ''
+            )
+            SELECT tag, COUNT(*) AS count
+            FROM tag_cte
+            WHERE tag != ''
+            GROUP BY tag
+            ORDER BY count DESC
+            LIMIT :limit;
+        """)
+
+        result = db.session.execute(query, {'user_id': user_id, 'row_type': row_type, 'limit': limit}).all()
+
+        tags_count = {}
+        for item in result:
+            tags_count[item[0]] = item[1]
+
+        return tags_count
+
+    summary['top3_wish_movie_tags'] = get_top_tags('-2')
+    summary['top3_watched_movie_tags'] = get_top_tags('2')
+
+    # 3. 看过的图书中，最爱的图书出版社前三，看过的电影中，最爱的制片国家前三
+    def get_top_counts(field, row_type, limit=3):
+
+        counts = db.session.query(field, func.count('*').label('count')).filter(
+            Douban.user_id == user_id, Douban.row_type == row_type
+        ).group_by(field).order_by(func.count('*').desc()).limit(limit).all()
+
+        counts_count = {}
+        for item in counts:
+            counts_count[item[0]] = item[1]
+        return counts_count
+
+    summary['top3_book_languages'] = get_top_counts(Douban.language, '1')
+    summary['top3_movie_languages'] = get_top_counts(Douban.language, '2')
+
+    # 4. 看过的图书中，最爱的作者前三，看过的电影中，最爱的导演前三
+    summary['top3_book_authors'] = get_top_counts(Douban.author, '1')
+    summary['top3_movie_directors'] = get_top_counts(Douban.author, '2')
+
+    # 5. 按月统计近 2 年里，每个月的读书和观影情况
+    def get_monthly_stats():
+        two_years_ago = datetime.datetime.now(pytz.timezone('Asia/Shanghai')) - relativedelta(years=2)
+
+        monthly_stats = {}
+
+        # 图书
+        book_counts = db.session.query(
+            func.date_format(Douban.date, '%Y-%m').label('month'),
+            func.count('*').label('count')
+        ).filter(
+            Douban.user_id == user_id,
+            Douban.row_type.in_(['1', '-1']),
+            Douban.date >= two_years_ago
+        ).group_by('month').all()
+
+        for month, count in book_counts:
+            if month not in monthly_stats:
+                monthly_stats[month] = {'book_count': 0, 'movie_count': 0}
+            monthly_stats[month]['book_count'] = count
+
+        # 电影
+        movie_counts = db.session.query(
+            func.date_format(Douban.date, '%Y-%m').label('month'),
+            func.count('*').label('count')
+        ).filter(
+            Douban.user_id == user_id,
+            Douban.row_type.in_(['2', '-2']),
+            Douban.date >= two_years_ago
+        ).group_by('month').all()
+
+        for month, count in movie_counts:
+            if month not in monthly_stats:
+                monthly_stats[month] = {'book_count': 0, 'movie_count': 0}
+            monthly_stats[month]['movie_count'] = count
+
+        # 排序
+        temp = sorted(monthly_stats.items(), key=lambda x: x[0])
+        monthly_stats_ = {}
+        for item in temp:
+            monthly_stats_[item[0]] = item[1]
+        return monthly_stats_
+
+    summary['monthly_stats'] = get_monthly_stats()
+
+    # 7. 总的图书想看数，电影想看数，图书已看数，电影已看数
+    summary['total_wish_books'] = Douban.query.filter_by(user_id=user_id, row_type='-1').count()
+    summary['total_wish_movies'] = Douban.query.filter_by(user_id=user_id, row_type='-2').count()
+    summary['total_read_books'] = Douban.query.filter_by(user_id=user_id, row_type='1').count()
+    summary['total_watched_movies'] = Douban.query.filter_by(user_id=user_id, row_type='2').count()
+
+    return jsonify({"msg": "success", "data": summary}), 200
