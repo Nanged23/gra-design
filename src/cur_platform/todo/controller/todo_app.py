@@ -1,4 +1,4 @@
-from flask import jsonify, request, Blueprint
+from flask import request, Blueprint
 from src.cur_platform.todo.service import todo_service
 
 todo_bp = Blueprint('todo_bp', __name__, url_prefix='/todo')
@@ -48,3 +48,17 @@ def get_todo():
     tags = args.get('tags')
     page = args.get('page')
     return todo_service.get_todo(user_id, is_finished, tags, page)
+
+
+@todo_bp.route('/monthly_todos', methods=['GET'])
+def get_monthly_todos():
+    args = request.args
+    user_id = args.get("user_id")
+    return todo_service.get_monthly_todos(user_id)
+
+
+@todo_bp.route('/annually_todos', methods=['GET'])
+def get_yearly_todos():
+    args = request.args
+    user_id = args.get("user_id")
+    return todo_service.get_yearly_todos(user_id)

@@ -1,130 +1,33 @@
 from src.third_platform.douban.utils.util import generate_random_string
 import requests
 from lxml import etree
-import re
-import json
 from flask import jsonify
 from src.user.entity import UserDetail
-from math import ceil
+from src.basic.extensions import db
+from src.third_platform.douban.entity import Douban
 
 
-def handle_answer(process, entry):
-    process = re.sub(r'\s+', '', process)
-    match = re.search(r'-(.*?)/(\d+)', process)
-    totalPage = ceil(int(match.group(2).strip()) / 15)
-    num = int(match.group(1).strip())
-    current_page = ceil(num / 15) if num > 15 else 1
-    answer = {
-        "msg": "success",
-        "process": process,
-        "currentPage": current_page,
-        "totalPage": totalPage,
-        "data": entry
-    }
-    return jsonify(answer), 200
-
-
-def send_request(url):
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-        "Cookie": "bid=" + generate_random_string()
-    }
-    response = requests.get(url, headers=headers)
-    response.encoding = 'utf-8'
-    return response.text
-
-
-def get_books(id, category, page, sort):
-    user_id = UserDetail.query.filter_by(user_id=id).first().douban_id
-    url = "https://book.douban.com/people/" + str(user_id) + "/" + category + "?sort=" + sort + "&start=" + str(
-        15 * (int(page) - 1))
-    text = send_request(url)
-    tree = etree.HTML(text)
-    parent_divs = tree.xpath('/html/body/div[3]/div[1]/div[2]/div[1]/ul/li')
-    entry = []
-
-    for div in parent_divs:
-        # 获取各条目的信息
-        img_element = div.xpath('./div[1]/a/img')
-        if img_element:
-            img_src = img_element[0].get('src')
-
-        link_element = div.xpath('./div[2]/h2/a')
-        if link_element:
-            link_href = link_element[0].get('href')
-            title = link_element[0].get('title')
-
-        time_element = div.xpath('./div[2]/div[2]/div[1]/span/text()')
-        if time_element:
-            cleaned_content = re.sub(r'\s+', ' ', time_element[0])
-            cleaned_content = cleaned_content.strip()
-            date = re.sub(r'<[^>]+>', '', cleaned_content).strip()
-
-        entry.append({
-            "img": img_src or None,
-            "name": title or None,
-            "link": link_href or None,
-            "date": date or None,
-        })
-    entry = json.dumps(entry, ensure_ascii=False)
-
-    process = tree.xpath('/html/body/div[3]/div[1]/div[2]/div[1]/div/div[2]/span/text()')
-    return handle_answer(process[0], entry)
-
-
-def get_movies(id, category, page, sort):
+def get_data(user_id, category, page, per_page=15):
     """
-    :param sort: 分为 time 和 rating
     :param page:数字，标识当前页码
-    :param id:用户 id，非豆瓣 id
+    :param user_id:用户 id，非豆瓣 id
     :param category:分类，分为 wish 和 collect，分别表示看过和想看
+    :param per_page:每页条目数量
     :return:
     """
-    user_id = UserDetail.query.filter_by(user_id=id).first().douban_id
-    url = "https://movie.douban.com/people/" + str(user_id) + "/" + category + "?sort=" + sort + "&start=" + str(
-        15 * (int(page) - 1))
-    text = send_request(url)
-    tree = etree.HTML(text)
-    entry = []
-
-    parent_divs = tree.xpath('/html/body/div[3]/div[1]/div[2]/div[1]/div[2]/div')
-
-    # 获取每一页的电影列表
-
-    for div in parent_divs:
-        # 获取各条目的信息
-        img_element = div.xpath('./div[1]/a/img')
-        if img_element:
-            img_src = img_element[0].get('src')
-
-        link_element = div.xpath('./div[2]/ul/li[1]/a')
-        if link_element:
-            link_href = link_element[0].get('href')
-            em_text = link_element[0].xpath('./em/text()')
-            em_text = em_text[0] if em_text else ''
-            title = em_text.split(' /')[0]
-
-        time_element = div.xpath('./div[2]/ul/li[3]/span/text()')
-        if time_element:
-            date = time_element[0]
-        entry.append({
-            "img": img_src or None,
-            "name": title or None,
-            "link": link_href or None,
-            "date": date or None,
-        })
-    entry = json.dumps(entry, ensure_ascii=False)
-    process = tree.xpath('/html/body/div[3]/div[1]/div[2]/div[1]/div[1]/div[4]/span/text()')
-    return handle_answer(process[0], entry)
+    movies = Douban.query.filter(Douban.user_id == user_id, Douban.row_type == category).order_by(
+        Douban.create_time.desc()).paginate(page=int(page), per_page=per_page)
+    all_movies = [movie.to_dict() for movie in movies.items]
+    return jsonify({"msg": "success", "data": {'total_pages': movies.pages, 'total_items': movies.total,
+                                               'items': all_movies}}), 200
 
 
-def get_user(id):
+def get_user(user_id):
     """
-    :param id:
+    :param user_id:用户 id
     :return:用户的个人信息
     """
-    user_id = UserDetail.query.filter_by(id=id).first().douban_id
+    user_id = UserDetail.query.filter_by(id=user_id).first().douban_id
     url = "https://api.douban.com/v2/user/" + str(user_id) + "?apikey=054022eaeae0b00e0fc068c0c0a2102a"
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
@@ -141,3 +44,49 @@ def movie_data():
     :return:TODO 统计用户各类型的观影频次（豆瓣自带的标签统计不好用），以便生成统计图。当用户首次登录时，会初始化数据，之后每次登录，则增量更新观影情况
     """
     pass
+
+
+def temp():
+    def send_request(url):
+        headers = {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-encoding": "identity",
+            "accept-language": "zh,zh-CN;q=0.9,en;q=0.8",
+            "cache-control": "max-age=0",
+            "cookie": "bid=hs507jrCDYs; douban-fav-remind=1; ll=\"108309\"; push_noty_num=0; push_doumail_num=0; viewed=\"11597363_35929450_25902728_26449601_7005249_30351293_35886603_36361860_36685093_36328704\"; dbcl2=\"265266112:0u9b5Y4juWE\"; ck=ZMmI; frodotk_db=\"d124b171d88e60c6736e145589ab2252\"",
+            "priority": "u=0, i",
+            "referer": "https://www.douban.com/people/172612296/?_i=1234084hs507jr",
+            "sec-ch-ua": "\"Not(A:Brand\";v=\"99\", \"Google Chrome\";v=\"133\", \"Chromium\";v=\"133\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "same-site",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+        }
+        response = requests.get(url, headers=headers)
+        response.encoding = 'utf-8'
+        return response.text
+
+    a = {
+        "data": [],
+    }
+    a = a["data"]
+    for _ in a:
+        try:
+            target = etree.HTML(send_request(_['link']))
+            publisher = target.xpath("/html/body/div[3]/div[1]/div/div[1]/div[1]/div[1]/div[1]/div[2]/a[1]//text()")
+            author = target.xpath("/html/body/div[3]/div[1]/div/div[1]/div[1]/div[1]/div[1]/div[2]/span[1]/a//text()")
+            author = author[0].split(']')[1].strip()
+            publisher = publisher[0]
+            row_type = -1
+            content_type = None
+            user_id = 123
+            douban = Douban(user_id, _['img'], _['link'], _['name'], _['date'], row_type, content_type, author,
+                            publisher)
+            db.session.add(douban)
+            db.session.commit()
+        except Exception:
+            continue

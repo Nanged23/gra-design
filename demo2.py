@@ -1,10 +1,21 @@
-import datetime
-import pytz
 
-now = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+from src.third_platform.douban.entity import Douban
+from lxml import etree
+import os
+import re
+from pypinyin import lazy_pinyin
+from src.cur_platform.article.service.ai_service import get_summary
+from src.cur_platform.article.entity import Article
+from flask import jsonify, request, after_this_request
+from src.basic.extensions import db, executor
+import oss2
+from oss2.credentials import EnvironmentVariableCredentialsProvider
+import uuid
+from dotenv import load_dotenv
+from src.user.utils.add_score import add_score
+from src.basic.extensions import redis_client
+from collections import defaultdict
+from sqlalchemy import and_
+from sqlalchemy.sql.expression import func
 
-# 计算一个月前的日期
-one_year_ago = now - datetime.timedelta(days=365)
 
-date_str = now.astimezone(pytz.utc).replace(tzinfo=None).strftime("%Y%m%d")
-print(now, one_year_ago, date_str)
