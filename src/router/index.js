@@ -10,11 +10,17 @@ import weread from '@/components/third/weread.vue';
 import login from '@/components/user/login.vue';
 import register from '@/components/user/register.vue';
 import index from '@/components/analyse/index.vue';
+import defaultPage from '@/components/defaultPage.vue';
+import settings from '@/components/settings.vue';
 const routes = [
     {
         path: '/',
-        name: 'login',
-        component: login,
+        name: 'defaultPage',
+        component: defaultPage,
+    }, {
+        path: '/settings',
+        name: 'settings',
+        component: settings
     },
     {
         path: '/login',
@@ -63,7 +69,7 @@ const routes = [
         path: '/third/weread',
         name: 'weread',
         component: weread,
-    },{
+    }, {
         path: '/analyse/index',
         name: 'index',
         component: index,
