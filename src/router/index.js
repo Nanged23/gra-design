@@ -11,7 +11,7 @@ import login from '@/components/user/login.vue';
 import register from '@/components/user/register.vue';
 import index from '@/components/analyse/index.vue';
 import defaultPage from '@/components/defaultPage.vue';
-import settings from '@/components/settings.vue';
+import settings from '@/components/index/settings.vue';
 const routes = [
     {
         path: '/',

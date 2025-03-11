@@ -1,10 +1,16 @@
 <style scoped>
-.spliter {
-  color: #ffffff;
-  /* margin-left: 3px; */
-  margin-right: 3px;
+.logo img {
+  transition: transform 1.5s linear; /* 添加过渡效果，使旋转更平滑 */
 }
 
+.logo:hover img {
+  transform: rotate(360deg); /* 鼠标悬停时旋转360度 */
+}
+.spliter {
+  color: #ffffff;
+  margin-right: 3px;
+}
+ 
 .footer {
   margin-top: 10px;
   display: flex;
@@ -25,6 +31,8 @@
 }
 
 .advice-container {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   font-family: "Manrope", sans-serif;
   display: flex;
   flex-direction: column;
@@ -32,7 +40,7 @@
   text-align: center;
   width: 195px;
   height: auto;
-  background-color: #313A49;
+  background-color: rgba(49, 58, 73, 0.3);
   border-radius: 10px;
   overflow: hidden;
   margin-top: 10px;
@@ -43,6 +51,7 @@
   font-size: 17px;
   background-image: linear-gradient(to right, hsl(150, 100%, 66%), #C031B5);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-transform: uppercase;
   font-weight: 500;
@@ -58,9 +67,6 @@
   letter-spacing: 1px;
 }
 
-.pattern-divider path {
-  fill: hsl(217, 19%, 38%);
-}
 
 .quote {
   align-items: center;
@@ -69,7 +75,7 @@
   height: 55px;
   width: 55px;
   border-radius: 74%;
-  background-color: #313A49;
+  background-color: transparent;
   border: none;
   cursor: pointer;
   transition: 0.3s all;
@@ -96,10 +102,8 @@
 .input {
   display: flex;
   flex-direction: column;
-  width: 200px;
-  background: #232526;
-  background: -webkit-linear-gradient(to right, #414345, #232526);
-  background: linear-gradient(to right, #414345, #232526);
+  width: 200px; 
+  background-color: #2C2C2F;
   justify-content: center;
   border-radius: 10px;
   transition: 0.7s;
@@ -164,18 +168,19 @@
 </style>
 
 <template>
-  <div style="display: flex; height: auto;">
+  <div style="display: flex; height: auto;background-color:#f1f4f6;">
     <div class="input">
-      <div align='center'><img src="../assets/logo.png"
-          style="width:100px;height:100px;margin-bottom: 10px;margin-top: 10px;"></img></div>
+      <div class='logo' align='center'><img src="../assets/logo.png"
+          style="width:100px;height:100px;  "></img></div>
+      <div  style="display: flex; justify-content: center; align-items: center; ">
+        <seven-segment-clock />
+      </div>
+      <!-- 每日格言 -->
       <div class="advice-container">
         <p class="paragraph">Q U O T E </p>
         <!-- TODO 
        post https://api.xygeng.cn/openapi/one 设置一言，如果QPS 过大 默认⬇️-->
         <div class="advice-details">知足且上进，温柔而坚定</div>
-        <div class="pattern-divider">
-
-        </div>
         <svg t="1741586765537" class="icon" viewBox="0 0 11051 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
           p-id="6414" width="200" height="30">
           <path
@@ -188,7 +193,7 @@
 
         <button class="quote">
           <svg t="1741586877802" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
-            p-id="10861" data-spm-anchor-id="a313x.search_index.0.i14.59913a81r8b05S" width="55" height="55" ref="mySvg"
+            p-id="10861" data-spm-anchor-id="a313x.search_index.0.i14.59913a81r8b05S" width="35" height="35" ref="mySvg"
             :class="{ 'rotated': isRotated, 'rotate-initial': !isRotated }" @click="rotateSvg">
             <path
               d="M950.371072 532.795629l-84.398202-84.393085c-6.101975-6.096858-14.093996-9.145287-22.087041-9.143241-7.995091-0.001023-15.988136 3.047406-22.079878 9.148357l-84.519975 84.530209c-12.20088 12.195763-12.20088 31.971156 0 44.171012 6.099928 6.094812 14.09195 9.145287 22.082948 9.145287s15.993253-3.050476 22.082948-9.150404l33.171494-33.175587c-16.019859 175.330214-163.813926 313.145-343.250668 313.145-190.096523 0-344.749812-154.653289-344.749812-344.749812s154.653289-344.754928 344.749812-344.754928c92.084255 0 178.658006 35.859719 243.779166 100.975762 12.20088 12.20088 31.966039 12.20088 44.166919 0 12.20088-12.195763 12.20088-31.971156 0-44.166919-76.914764-76.91988-179.176822-119.27657-287.946085-119.27657-224.543056 0-407.217539 182.679599-407.217539 407.222655 0 224.537939 182.674483 407.217539 407.217539 407.217539 212.604142 0 387.574153-163.800623 405.591505-371.808074l29.239951 29.238928c6.099928 6.094812 14.09195 9.145287 22.082948 9.145287 7.990998 0 15.98302-3.050476 22.082948-9.150404C962.571952 564.770877 962.571952 544.995485 950.371072 532.795629z"
@@ -205,6 +210,7 @@
           </svg>
         </button>
       </div>
+      <!-- 菜单区 -->
       <div class="title"> - 文字织梦，心随笔动 - </div>
       <button class="value" :class="{ 'active': activePath === '/article' }" @click="goTo('/article')">
         <svg t="1741528769442" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
@@ -330,10 +336,12 @@
   </div>
 
 </template>
-<script setup>
+<script setup >
 import { useRouter, useRoute } from 'vue-router';
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted, watchEffect } from 'vue'; 
+import SevenSegmentClock from './index/SevenSegmentClock.vue'
 
+ 
 const router = useRouter();
 const route = useRoute();
 const activePath = ref(route.path); // 初始化 activePath
