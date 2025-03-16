@@ -4,6 +4,10 @@ import pytz
 from sqlalchemy_serializer import SerializerMixin
 
 
+def get_current_time():
+    return datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+
+
 class MemEvent(db.Model, SerializerMixin):
     __tablename__ = 'mem_event'
 
@@ -13,8 +17,9 @@ class MemEvent(db.Model, SerializerMixin):
     event_date = db.Column(db.TIMESTAMP, nullable=False)  # 纪念日日期
     description = db.Column(db.Text)  # 事件描述
     cur_time = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-    create_time = db.Column(db.TIMESTAMP, default=cur_time)  # 创建时间，默认为当前时间
-    update_time = db.Column(db.TIMESTAMP, default=cur_time, onupdate=cur_time)  # 修改时间，默认为当前时间，并在记录更新时自动更新
+    create_time = db.Column(db.TIMESTAMP, default=get_current_time)  # 创建时间，默认为当前时间
+    update_time = db.Column(db.TIMESTAMP, default=get_current_time,
+                            onupdate=get_current_time)  # 修改时间，默认为当前时间，并在记录更新时自动更新
     serialize_rules = ('-create_time', '-update_time', '-id', '-user_id')
 
     def __init__(self, user_id, event_name, event_date, description):
@@ -34,8 +39,7 @@ class Todo(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, nullable=False)  # 用户Id
     title = db.Column(db.Text)
     tags = db.Column(db.String(255))
-    cur_time = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-    create_time = db.Column(db.TIMESTAMP, default=cur_time)  # 创建时间，默认为当前时间
+    create_time = db.Column(db.TIMESTAMP, default=get_current_time)  # 创建时间，默认为当前时间
     set_time = db.Column(db.TIMESTAMP)
     finish_time = db.Column(db.TIMESTAMP)
     serialize_rules = ('-create_time', '-id', '-user_id')

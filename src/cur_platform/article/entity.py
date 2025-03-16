@@ -4,6 +4,10 @@ import pytz
 from sqlalchemy_serializer import SerializerMixin
 
 
+def get_current_time():
+    return datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+
+
 class Article(db.Model, SerializerMixin):
     __tablename__ = 'article'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # 自增主键
@@ -16,8 +20,9 @@ class Article(db.Model, SerializerMixin):
     cover = db.Column(db.String(255))  # 文章封面
     views_count = db.Column(db.Integer, nullable=False, default=0)
     cur_time = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-    create_time = db.Column(db.TIMESTAMP, default=cur_time)  # 创建时间，默认为当前时间
-    modify_time = db.Column(db.TIMESTAMP, default=cur_time, onupdate=cur_time)  # 修改时间，默认为当前时间，并在记录更新时自动更新
+    create_time = db.Column(db.TIMESTAMP, default=get_current_time)  # 创建时间，默认为当前时间
+    modify_time = db.Column(db.TIMESTAMP, default=get_current_time,
+                            onupdate=get_current_time)  # 修改时间，默认为当前时间，并在记录更新时自动更新
     serialize_rules = ('-create_time', '-author_id')
 
     def __init__(self, title, slug, content, excerpt, author_id, tags, cover):

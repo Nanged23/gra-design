@@ -160,7 +160,8 @@ def delete_memo(moment_id):
 
 def get_memo(user_id, page):
     per_page = 15  # 每页显示的 memo 数
-    memos = Moment.query.filter_by(user_id=user_id).paginate(page=int(page), per_page=per_page)
+    memos = Moment.query.filter_by(user_id=user_id).order_by(Moment.create_time.desc()).paginate(page=int(page),
+                                                                                                 per_page=per_page)
     all_memos = [memo.to_dict() for memo in memos.items]
     return jsonify({"msg": "success", "data": {'total_pages': memos.pages, 'total_items': memos.total,
                                                'items': all_memos}}), 200

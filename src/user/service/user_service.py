@@ -44,7 +44,7 @@ def login(email, password):
     # 在增加登录积分之前，查询当天是否已有分数，有则证明已经登录过
     date_str = datetime.now().strftime("%Y%m%d")
     key = f"score:user_{user_id}"
-    if redis_client.hget(key, date_str).decode('utf-8') == '0':
+    if (redis_client.hget(key, date_str) or b'0').decode('utf-8') == '0':
         add_score(request.full_path, user_id)
 
     # 更新 lastLoginTime

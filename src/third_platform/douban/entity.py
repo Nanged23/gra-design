@@ -4,6 +4,10 @@ import pytz
 from sqlalchemy_serializer import SerializerMixin
 
 
+def get_current_time():
+    return datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+
+
 class Douban(db.Model, SerializerMixin):
     __tablename__ = 'douban'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # 自增主键
@@ -17,7 +21,7 @@ class Douban(db.Model, SerializerMixin):
     author = db.Column(db.String(255))
     language = db.Column(db.String(255))
     cur_time = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-    create_time = db.Column(db.TIMESTAMP, default=cur_time)  # 创建时间，默认为当前时间
+    create_time = db.Column(db.TIMESTAMP, default=get_current_time)  # 创建时间，默认为当前时间
     serialize_rules = ('-row_type', '-id', '-user_id')
 
     def __init__(self, user_id, img, link, name, date, row_type, content_type, author, language):
