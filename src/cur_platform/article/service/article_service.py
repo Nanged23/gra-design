@@ -150,8 +150,7 @@ def get_article(user_id, type, extra, default_len=20, per_page=5, tag=None):
     elif type == '1':  # 获取单篇文章详情
         article = Article.query.filter_by(id=extra).first()
         article.views_count += 1
-        db.session.add(article)  # 将 article 对象添加到 session 中，表示要更新它
-        db.session.commit()
+
         # 查询上一篇文章和下一篇文章
         previous_article = Article.query.filter(Article.id < extra).order_by(Article.id.desc()).first()
         next_article = Article.query.filter(Article.id > extra).order_by(Article.id.asc()).first()
@@ -164,8 +163,10 @@ def get_article(user_id, type, extra, default_len=20, per_page=5, tag=None):
             "id": next_article.id,
             "title": next_article.title
         } if next_article else None
+        # read_time:所需的阅读时间
         read_time = len(article.content) // 300
         read_time = 1 if read_time <= 1 else read_time
+        db.session.commit()
         return jsonify({"msg": "success",
                         "data": {'read_time': read_time, 'pre_article': pre_article, 'next_article': next_article,
                                  'items': [article.to_dict()]}}), 200

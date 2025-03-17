@@ -2,6 +2,7 @@ from src.basic.extensions import db
 import datetime
 import pytz
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy import event
 
 
 def get_current_time():
@@ -21,8 +22,7 @@ class Article(db.Model, SerializerMixin):
     views_count = db.Column(db.Integer, nullable=False, default=0)
     cur_time = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     create_time = db.Column(db.TIMESTAMP, default=get_current_time)  # 创建时间，默认为当前时间
-    modify_time = db.Column(db.TIMESTAMP, default=get_current_time,
-                            onupdate=get_current_time)  # 修改时间，默认为当前时间，并在记录更新时自动更新
+    modify_time = db.Column(db.TIMESTAMP, default=get_current_time)  # 修改时间，默认为当前时间，并在记录更新时自动更新
     serialize_rules = ('-create_time', '-author_id')
 
     def __init__(self, title, slug, content, excerpt, author_id, tags, cover):
@@ -36,3 +36,15 @@ class Article(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Article {self.title},{self.content}>"
+
+
+@event.listens_for(Article, 'before_update')
+def update_modify_time(mapper, connection, target):
+    # 检查 title, cover, content, tags 是否有变化
+    if any([
+        db.inspect(target).attrs.title.history.has_changes(),
+        db.inspect(target).attrs.cover.history.has_changes(),
+        db.inspect(target).attrs.content.history.has_changes(),
+        db.inspect(target).attrs.tags.history.has_changes()
+    ]):
+        target.modify_time = get_current_time()
