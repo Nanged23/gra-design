@@ -12,6 +12,8 @@ import register from '@/components/user/register.vue';
 import index from '@/components/analyse/index.vue';
 import defaultPage from '@/components/defaultPage.vue';
 import settings from '@/components/index/settings.vue';
+import articleDetail from '@/components/cur/articleDetail.vue';
+import writeArticle from '@/components/cur/writeArticle.vue';
 const routes = [
     {
         path: '/',
@@ -74,6 +76,16 @@ const routes = [
         name: 'index',
         component: index,
     },
+    {
+        path: '/articleDetail/:slug',
+        name: 'articleDetail',
+        component: articleDetail,
+    },
+    {
+        path: '/writeArticle',
+        name: 'writeArticle',
+        component: writeArticle,
+    }
 ];
 
 const router = createRouter({
