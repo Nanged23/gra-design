@@ -87,15 +87,15 @@
 
 }
 
-.blog-post-container::after {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: url("../../assets/back.png") no-repeat center/cover;
-    z-index: -1;
+.main {
+    margin-left: 220px;
+}
+
+.blog-post-container {
+    max-width: none; 
+    margin-left: auto;
+    margin-right: auto;
+    padding: 2rem;
 }
 
 .cover-image {
@@ -161,7 +161,7 @@
 .excerpt {
     margin-bottom: 2rem;
     padding: 1rem;
-    background-color: #f9fafb;
+    background: transparent;
     border-left: 4px solid #d1d5db;
     border-radius: 0.25rem;
 }
@@ -173,6 +173,7 @@
 
 .article-content {
     max-width: none;
+    width: 100%;
 }
 
 .markdown-body {
@@ -202,111 +203,124 @@
 .markdown-body pre {
     padding: 16px;
     overflow: auto;
-    font-size: 85%;
+    font-size: 1.2rem;
     line-height: 1.45;
-    background-color: #f6f8fa;
     border-radius: 6px;
     margin-bottom: 16px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    box-sizing: border-box;
 }
 
 .markdown-body code {
-    padding: 0.2em 0.4em;
+    padding: 0.4em;
     margin: 0;
     font-size: 85%;
-    background-color: rgba(27, 31, 35, 0.05);
-    border-radius: 6px;
+    background-color: #373839;
+    border-radius: 4px;
+    color: #e5e7eb
 }
 
 .markdown-body pre code {
     padding: 0;
-    background-color: transparent;
+    width: 100%;
+    display: block;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 </style>
 <template>
     <div class="blog-post-container">
-        <div v-if="post">
-            <div class="cover-image">
-                <img :src="post.cover" :alt="post.title" class="cover-img" />
-            </div>
-            <div class="article-header">
-                <h1 class="title">{{ post.title }}</h1>
-                <div class="article-meta">
-                    <div class="meta-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{{ formatDate(post.modify_time) }}</span>
+        <div class="main">
+            <div v-if="post">
+                <div class="cover-image">
+                    <img :src="post.cover" :alt="post.title" class="cover-img" />
+                </div>
+                <div class="article-header">
+                    <h1 class="title">{{ post.title }}</h1>
+                    <div class="article-meta">
+                        <div class="meta-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>{{ formatDate(post.modify_time) }}</span>
+                        </div>
+
+                        <div class="meta-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <span>{{ post.views_count }} </span>
+                        </div>
+                        <div class="meta-item">
+                            <svg t="1742195535756" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                                xmlns="http://www.w3.org/2000/svg" p-id="12153" width="18" height="18">
+                                <path
+                                    d="M817.8 109.7H207.5c-12.9 0-22.7-10.6-22.7-22.7 0-12.9 10.6-22.7 22.7-22.7h610.2c12.9 0 22.7 10.6 22.7 22.7 0.8 12.1-9.8 22.7-22.6 22.7zM848 962.2H178c-13.6 0-25-11.4-25-25s11.4-25 25-25h670c13.6 0 25 11.4 25 25s-11.3 25-25 25z"
+                                    p-id="12154"></path>
+                                <path
+                                    d="M753.4 653.3l-0.8-1.5C714 584.4 662.5 540.5 608 514c54.5-27.3 105.2-70.4 144.6-137.8l0.8-1.5C792 308 817.8 217.2 822.3 96h-44.7c-3.8 112.1-27.3 195.3-62.8 256.7l-0.8 0.8c-43.9 78-93.1 119.6-156.7 139.3l-3 0.8h-0.8c-1.5 0.8-2.3 1.5-3.8 2.3l-0.8 0.8-1.5 1.5-1.5 1.5v0.8c-0.8 0.8-1.5 2.3-2.3 3.8l-0.8 0.8-1.5 5.3v8.3l1.5 5.3 0.8 0.8c0.8 1.5 1.5 2.3 2.3 3.8v0.8l1.5 1.5v-0.8l1.5 0.8 0.8 0.8c0.8 0.8 2.3 1.5 3.8 2.3h0.8l3 1.5c64.4 20.4 112.8 61.3 157.5 138.6l0.8 1.5c18.9 31.8 33.3 70.4 44.7 115.1 2.3 12.9 10.6 40.9 12.1 77.2-35.6-31.8-134-54.5-252.1-56V461.7c1.5 0 2.3-0.8 3.8-1.5v-0.8l6.1-2.3h1.5c43.2-13.6 77.2-34.8 106-62.8 30.3-30.3 53.8-67.4 69.7-109 4.5-11.4-0.8-24.2-12.9-28.8-11.4-4.5-24.2 0.8-28.8 12.1v0.8c-13.6 34.8-33.3 67.4-59.1 93.1-23.6 22.7-51.6 40.9-87.2 51.5l-0.8 0.8-2.3 0.8-3.8 0.8-2.3-0.8-1.5-0.8-2.3-0.8c-34.8-11.4-64.4-28.8-87.1-51.5-26.5-25.7-45.4-57.5-59.1-93.1-4.5-11.4-17.4-17.4-28-12.9-11.4 4.5-16.7 16.7-12.9 28.8 15.9 41.6 38.6 78.7 69.7 109 28 28 62.8 49.2 105.2 62.8h0.8l6.1 2.3 1.5 0.8c0.8 0.8 1.5 0.8 3 1.5v349.8c-110.5 0-206.7 18.9-252.1 45.4 1.5-18.2 5.3-37.9 12.1-66.6 11.4-45.4 26.5-83.3 44.7-115.1l0.8-1.5c44.7-77.2 93.1-118.1 158.2-138.6l2.3-1.5h0.8c1.5-0.8 2.3-1.5 3.8-2.3l0.8-0.8 1.5-0.8v-0.8l1.5-1.5v-0.8c0.8-0.8 1.5-2.3 2.3-3.8v-0.8c0.8-1.5 1.5-3.8 1.5-5.3v-7.6c0-1.5-0.8-3.8-1.5-5.3v-0.8c-0.8-1.5-1.5-3-2.3-3.8v-0.8l-1.5-1.5-1.5-1.5-2.3 0.8c-1.5-0.8-2.3-1.5-3.8-2.3h-0.8l-2.3-0.8c-64.4-19.7-113.6-61.3-158.2-139.3l-0.8-0.8C274 291.7 250.5 208.4 246 96.3h-44.7c4.5 121.1 30.3 211.2 68.9 278.6l0.8 1.5c38.6 67.4 90.1 110.5 144.6 137.8C361.1 540.7 310.4 584.6 271 652l-0.8 1.5C234 717.6 208.3 802.4 203 915.2h617.8c-5.3-113.5-30.3-198.3-67.4-261.9z"
+                                    p-id="12155"></path>
+                            </svg>
+                            <span>{{ other_data.read_time }} 分钟内</span>
+                        </div>
                     </div>
 
-                    <div class="meta-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        <span>{{ post.views_count }} </span>
+                    <div class="tags">
+                        <span v-for="(tag, index) in splitTags(post.tags)" :key="index" class="tag">
+                            {{ tag }}
+                        </span>
                     </div>
-                    <div class="meta-item">
-                        <svg t="1742195535756" class="icon" viewBox="0 0 1024 1024" version="1.1"
-                            xmlns="http://www.w3.org/2000/svg" p-id="12153" width="18" height="18">
-                            <path
-                                d="M817.8 109.7H207.5c-12.9 0-22.7-10.6-22.7-22.7 0-12.9 10.6-22.7 22.7-22.7h610.2c12.9 0 22.7 10.6 22.7 22.7 0.8 12.1-9.8 22.7-22.6 22.7zM848 962.2H178c-13.6 0-25-11.4-25-25s11.4-25 25-25h670c13.6 0 25 11.4 25 25s-11.3 25-25 25z"
-                                p-id="12154"></path>
-                            <path
-                                d="M753.4 653.3l-0.8-1.5C714 584.4 662.5 540.5 608 514c54.5-27.3 105.2-70.4 144.6-137.8l0.8-1.5C792 308 817.8 217.2 822.3 96h-44.7c-3.8 112.1-27.3 195.3-62.8 256.7l-0.8 0.8c-43.9 78-93.1 119.6-156.7 139.3l-3 0.8h-0.8c-1.5 0.8-2.3 1.5-3.8 2.3l-0.8 0.8-1.5 1.5-1.5 1.5v0.8c-0.8 0.8-1.5 2.3-2.3 3.8l-0.8 0.8-1.5 5.3v8.3l1.5 5.3 0.8 0.8c0.8 1.5 1.5 2.3 2.3 3.8v0.8l1.5 1.5v-0.8l1.5 0.8 0.8 0.8c0.8 0.8 2.3 1.5 3.8 2.3h0.8l3 1.5c64.4 20.4 112.8 61.3 157.5 138.6l0.8 1.5c18.9 31.8 33.3 70.4 44.7 115.1 2.3 12.9 10.6 40.9 12.1 77.2-35.6-31.8-134-54.5-252.1-56V461.7c1.5 0 2.3-0.8 3.8-1.5v-0.8l6.1-2.3h1.5c43.2-13.6 77.2-34.8 106-62.8 30.3-30.3 53.8-67.4 69.7-109 4.5-11.4-0.8-24.2-12.9-28.8-11.4-4.5-24.2 0.8-28.8 12.1v0.8c-13.6 34.8-33.3 67.4-59.1 93.1-23.6 22.7-51.6 40.9-87.2 51.5l-0.8 0.8-2.3 0.8-3.8 0.8-2.3-0.8-1.5-0.8-2.3-0.8c-34.8-11.4-64.4-28.8-87.1-51.5-26.5-25.7-45.4-57.5-59.1-93.1-4.5-11.4-17.4-17.4-28-12.9-11.4 4.5-16.7 16.7-12.9 28.8 15.9 41.6 38.6 78.7 69.7 109 28 28 62.8 49.2 105.2 62.8h0.8l6.1 2.3 1.5 0.8c0.8 0.8 1.5 0.8 3 1.5v349.8c-110.5 0-206.7 18.9-252.1 45.4 1.5-18.2 5.3-37.9 12.1-66.6 11.4-45.4 26.5-83.3 44.7-115.1l0.8-1.5c44.7-77.2 93.1-118.1 158.2-138.6l2.3-1.5h0.8c1.5-0.8 2.3-1.5 3.8-2.3l0.8-0.8 1.5-0.8v-0.8l1.5-1.5v-0.8c0.8-0.8 1.5-2.3 2.3-3.8v-0.8c0.8-1.5 1.5-3.8 1.5-5.3v-7.6c0-1.5-0.8-3.8-1.5-5.3v-0.8c-0.8-1.5-1.5-3-2.3-3.8v-0.8l-1.5-1.5-1.5-1.5-2.3 0.8c-1.5-0.8-2.3-1.5-3.8-2.3h-0.8l-2.3-0.8c-64.4-19.7-113.6-61.3-158.2-139.3l-0.8-0.8C274 291.7 250.5 208.4 246 96.3h-44.7c4.5 121.1 30.3 211.2 68.9 278.6l0.8 1.5c38.6 67.4 90.1 110.5 144.6 137.8C361.1 540.7 310.4 584.6 271 652l-0.8 1.5C234 717.6 208.3 802.4 203 915.2h617.8c-5.3-113.5-30.3-198.3-67.4-261.9z"
-                                p-id="12155"></path>
-                        </svg>
-                        <span>{{ other_data.read_time }} 分钟内</span>
+
+                    <div class="excerpt">
+                        <p class="excerpt-text">{{ post.excerpt }}</p>
                     </div>
                 </div>
 
-                <div class="tags">
-                    <span v-for="(tag, index) in splitTags(post.tags)" :key="index" class="tag">
-                        {{ tag }}
-                    </span>
+                <div class="article-content">
+                    <div v-html="renderedContent" class="markdown-body"></div>
                 </div>
 
-                <div class="excerpt">
-                    <p class="excerpt-text">{{ post.excerpt }}</p>
-                </div>
-            </div>
-
-            <div class="article-content">
-                <div v-html="renderedContent" class="markdown-body"></div>
-            </div>
-
-            <div class="article-footer">
-                <div class="article-navigation">
-                    <div class="nav-item nav-prev" v-if="other_data.pre_post" @click="goToArticle(other_data.pre_post)">
-                        <span class="nav-icon">&lt;</span>
-                        <span class="nav-text">{{ other_data.pre_post.title }}</span>
-                    </div>
-                    <div class="nav-item nav-next" v-if="other_data.next_post"
-                        @click="goToArticle(other_data.next_post)">
-                        <span class="nav-text">{{ other_data.next_post.title }}</span>
-                        <span class="nav-icon">&gt;</span>
+                <div class="article-footer">
+                    <div class="article-navigation">
+                        <div class="nav-item nav-prev" v-if="other_data.pre_post"
+                            @click="goToArticle(other_data.pre_post)">
+                            <span class="nav-icon">&lt;</span>
+                            <span class="nav-text">{{ other_data.pre_post.title }}</span>
+                        </div>
+                        <div class="nav-item nav-next" v-if="other_data.next_post"
+                            @click="goToArticle(other_data.next_post)">
+                            <span class="nav-text">{{ other_data.next_post.title }}</span>
+                            <span class="nav-icon">&gt;</span>
+                        </div>
                     </div>
                 </div>
             </div>
+            <div v-else>Loading...</div>
         </div>
-        <div v-else>Loading...</div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, defineEmits } from 'vue';
 import { ElMessage } from 'element-plus';
+
 import { useArticleStore } from '../../stores/article';
 import { useRouter, useRoute } from 'vue-router';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github.css';
 import { getSingleArticle } from '../../js/cur/article.js';
-
+const emits = defineEmits(['scrollToTop']);
 marked.setOptions({
     highlight: function (code, lang) {
         if (lang && hljs.getLanguage(lang)) {
@@ -371,10 +385,7 @@ onMounted(() => {
 });
 watch(() => route.path, () => {
     loadArticle();
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
+    emits('scrollToTop');
 });
 const goToArticle = async (post) => {
     const requestParams = { user_id: 123, type: 1, extra: post.id };

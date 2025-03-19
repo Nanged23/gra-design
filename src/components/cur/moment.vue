@@ -1,19 +1,4 @@
 <style scoped>
-.all::after {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: url("../../assets/pngs/image.png");
-  background-size: 100vw 100vh;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  z-index: -1;
-}
-
 .pagination {
   display: flex;
   justify-content: center;
@@ -185,7 +170,7 @@
 </style>
 
 <template>
-  <div class="all">
+  <div class="main">
     <div class="markdown-editor">
       <textarea v-model="markdownText" placeholder="写下此刻的感受 ..." class="editor"></textarea>
       <div class="preview" v-html="compiledMarkdown"></div>
@@ -210,7 +195,7 @@
       </div>
       <div class="notibody" v-html="renderMarkdown(post.content)"></div>
     </div>
-    <div class="pagination"> <span>=> 共{{ total_items }}条数据 <=</span>
+    <div class="pagination"> <span> => 共{{ total_items }}条数据 <= </span>
           <el-pagination background layout="prev, pager, next" :current-page="currentPage" :page-count="total_pages"
             @current-change="handlePageChange" />
     </div>
@@ -218,7 +203,7 @@
 </template>
 <script setup>
 import { ElMessage } from 'element-plus';
-import { ref, computed } from 'vue'
+import { ref, computed,defineEmits } from 'vue'
 import { getMomentList, addMomentList } from '../../js/cur/moment.js';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
@@ -226,17 +211,14 @@ import 'highlight.js/styles/default.css';
 const moment = ref({
   items: []
 })
+const emits = defineEmits(['scrollToTop']);
 const total_pages = ref(0)
 const total_items = ref(0)
-const currentPage = ref(1)
-
+const currentPage = ref(1) 
 const handlePageChange = (newPage) => {
   currentPage.value = newPage;
-  fetchMomentInfo(newPage).then(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'  //回到顶部
-    });
+  fetchMomentInfo(newPage).then(() => { 
+    emits('scrollToTop');
   });
 };
 const fetchMomentInfo = async (page = 1) => {
@@ -268,9 +250,9 @@ marked.setOptions({
   },
   breaks: true,
   gfm: true,
-}); 
+});
 const compiledMarkdown = computed(() => {
-  return  marked(markdownText.value); 
+  return marked(markdownText.value);
 });
 const renderMarkdown = (text) => {
   return marked(text);

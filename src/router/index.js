@@ -65,7 +65,6 @@ const routes = [
         path: '/third/douban',
         name: 'douban',
         component: douban,
-
     },
     {
         path: '/third/weread',
