@@ -17,3 +17,17 @@ export async function getSingleArticle(params) {
     throw error;
   }
 }
+export async function writeArticle(params) {
+  try {
+
+    const response = await api.post('/article/write', params, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("保存文章失败:", error);
+    throw error;
+  }
+}

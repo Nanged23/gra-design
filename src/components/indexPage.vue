@@ -129,6 +129,7 @@
   height: 100vh;
   z-index: -1;
   background: no-repeat center/cover;
+  transition: background-image 1s ease-in-out;
 }
 
 .content-layer {
@@ -334,7 +335,7 @@ const scrollToTop = () => {
 
 const router = useRouter();
 const route = useRoute();
-const activePath = ref(route.path.replace('/', '') || 'default'); // 将路径转为类名，默认值为 'default'
+const activePath = ref(route.path.replace('/', '') || 'default');
 const backgroundImage = ref('');
 
 const goTo = (path) => {
@@ -349,7 +350,7 @@ watch(() => route.path, (newPath) => {
 
   switch (true) {
     case newPath === '/article':
-      backgroundImage.value = `${require('@/assets/pngs/back.png')}`;
+      backgroundImage.value = `${require('@/assets/pngs/purple.png')}`;
       break;
     case newPath === '/moment':
       backgroundImage.value = `${require('@/assets/pngs/girl.png')}`;

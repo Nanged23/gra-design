@@ -92,7 +92,7 @@
 }
 
 .blog-post-container {
-    max-width: none; 
+    max-width: none;
     margin-left: auto;
     margin-right: auto;
     padding: 2rem;
@@ -231,11 +231,49 @@
     white-space: pre-wrap;
     word-wrap: break-word;
 }
+
+.writeLogo {
+    position: fixed;
+    bottom: 5%;
+    right: 3%;
+    z-index: 1000;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.writeLogo:hover {
+    box-shadow: 0 0 15px rgba(0, 149, 255, 0.7);
+    transform: scale(1.1);
+}
+
+.writeLogo:active {
+    box-shadow: 0 0 20px rgba(0, 149, 255, 1);
+    transform: scale(1.05);
+}
+
+.writeLogo svg {
+    display: block;
+    width: 30px;
+    height: 30px;
+}
 </style>
 <template>
     <div class="blog-post-container">
         <div class="main">
             <div v-if="post">
+                <div class="writeLogo" @click="goTo('/writeArticle')">
+                    <svg t="1742131249746" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                        xmlns="http://www.w3.org/2000/svg" p-id="10145">
+                        <path
+                            d="M258.56 916.48c-30.72 0-64-5.12-92.16-15.36-64-23.04-97.28-69.12-99.84-128-2.56-89.6 66.56-120.32 120.32-143.36 51.2-23.04 79.36-35.84 79.36-74.24 0-46.08-79.36-84.48-112.64-89.6-12.8-5.12-20.48-17.92-20.48-30.72 2.56-12.8 15.36-23.04 28.16-20.48 46.08 7.68 156.16 56.32 156.16 140.8 0 74.24-61.44 99.84-110.08 120.32-56.32 25.6-92.16 43.52-89.6 97.28 0 38.4 23.04 66.56 64 81.92 66.56 25.6 166.4 7.68 192-23.04 10.24-10.24 25.6-12.8 35.84-2.56 10.24 10.24 12.8 25.6 2.56 35.84-25.6 30.72-89.6 51.2-153.6 51.2z"
+                            fill="#858E9E" p-id="10146"></path>
+                        <path
+                            d="M435.2 757.76c-5.12 5.12 2.56 17.92 12.8 25.6s23.04 10.24 28.16 5.12l107.52-81.92-102.4-74.24-46.08 125.44zM929.28 120.32c-28.16-20.48-69.12-15.36-89.6 15.36L509.44 591.36l102.4 74.24 332.8-455.68c20.48-28.16 12.8-69.12-15.36-89.6z"
+                            fill="#525C6A" p-id="10147"></path>
+                    </svg>
+                </div>
                 <div class="cover-image">
                     <img :src="post.cover" :alt="post.title" class="cover-img" />
                 </div>
@@ -311,11 +349,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, defineEmits } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { ElMessage } from 'element-plus';
-
 import { useArticleStore } from '../../stores/article';
-import { useRouter, useRoute } from 'vue-router';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github.css';
@@ -331,9 +367,12 @@ marked.setOptions({
     breaks: true,
     gfm: true
 });
-
-const articleStore = useArticleStore();
+import { useRouter, useRoute } from 'vue-router';
 const router = useRouter();
+const goTo = (path) => {
+    router.push(path);
+};
+const articleStore = useArticleStore();
 const route = useRoute();
 const post = ref(null);
 const other_data = ref({

@@ -56,6 +56,7 @@
 }
 
 .blog-post-card {
+    opacity: 0.9;
     display: flex;
     flex-direction: row;
     align-items: center;
