@@ -1,6 +1,6 @@
 <style>
 .all {
-    margin-left: 220px;
+    margin-left: 420px;
 }
 </style>
 <template>

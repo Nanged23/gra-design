@@ -1,14 +1,13 @@
 <template> 
-  <indexPage/>
+<router-view />
 </template>
 
-<script>
-import indexPage from './components/indexPage.vue'
-
+<script> 
+import login from './components/user/login.vue'
 export default {
   name: 'App',
   components: {
-    indexPage
+  login
   }
 }
 </script>

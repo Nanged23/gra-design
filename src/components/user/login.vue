@@ -1,215 +1,276 @@
+<style scoped>
+* {
+  font-family: "Aguazyuan", Courier, monospace;
+}
+
+.gradient-container {
+  top: 0;
+  left: 0;
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(45deg, #0b0f30, #635ea7, #7a8dc4, #391657);
+  background-size: 400% 400%;
+  animation: gradientAnimation 10s ease infinite;
+}
+
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.particles-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(118, 146, 239, 0.3);
+  box-shadow: 0 0 15px 2px rgba(100, 255, 255, 0.4);
+  filter: blur(6px);
+  animation: floatAnimation linear infinite;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes floatAnimation {
+  0% {
+    transform: translate(-50%, -50%) translateY(0) translateX(0);
+  }
+
+  25% {
+    transform: translate(-50%, -50%) translateY(-40px) translateX(40px);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) translateY(0) translateX(80px);
+  }
+
+  75% {
+    transform: translate(-50%, -50%) translateY(40px) translateX(40px);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) translateY(0) translateX(0);
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.75
+}
+
+.login-wrapper {
+  width: 70vw;
+  height: 80vh;
+  background-color: #fff;
+  border-radius: 40px;
+  display: flex;
+}
+
+.left-img {
+  border-radius: 40px;
+  flex: 1;
+  background: url(../../assets/pngs/bg.png) no-repeat;
+  background-size: cover;
+  position: relative;
+}
+
+.right-login-form {
+  flex: 1;
+  position: relative;
+}
+
+.form-wrapper {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.input-items {
+  margin: 20px 0;
+}
+
+.input-tips {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 20px;
+  margin: 10px 0;
+}
+
+.inputs {
+  width: 100%;
+  height: 50px;
+  border-radius: 10px;
+  border: 1px solid rgb(227, 227, 227);
+  padding: 20px;
+  box-sizing: border-box;
+  outline: none;
+  transition: 0.5s;
+}
+
+.inputs:focus {
+  border: 1px solid rgb(128, 106, 196);
+}
+
+.forgot {
+  float: right;
+  font-weight: 600;
+  text-align: right;
+  margin: 5px 0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn {
+  width: 100%;
+  height: 50px;
+  background-color: rgb(128, 106, 196);
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 25px;
+  margin: 20px 0;
+  cursor: pointer;
+}
+
+.siginup-tips {
+  text-align: center;
+  font-weight: 600;
+  margin: 10px 0;
+}
+
+.siginup-tips span:last-child {
+  color: rgb(110, 87, 179);
+  cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+  .login-wrapper {
+    padding: 20px;
+  }
+
+  .left-img {
+    display: none;
+  }
+
+  .right-login-form {
+    padding: 20px;
+  }
+}
+</style>
 <template>
-    <div class="card-container">
-        <div ref="containerRef" @mouseenter="handleMouseEnter" @mousemove="handleMouseMove"
-            @mouseleave="handleMouseLeave" class="card-wrapper">
-            <div class="card-body">
-                <div ref="titleRef" class="card-title" :style="getItemStyle(50)">
-                    Make things float in air
-                </div>
-
-                <p ref="descriptionRef" class="card-description" :style="getItemStyle(60)">
-                    Hover over this card to unleash the power of CSS perspective
-                </p>
-
-                <div ref="imageContainerRef" class="card-image-container" :style="getItemStyle(100)">
-                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2560&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                        class="card-image" alt="thumbnail" />
-                </div>
-
-                <div class="card-footer">
-                    <a ref="tryNowRef" href="https://twitter.com/mannupaaji" target="_blank" class="try-now-link"
-                        :style="getItemStyle(20)">
-                        Try now →
-                    </a>
-
-                    <button ref="signUpRef" class="sign-up-button" :style="getItemStyle(20)">
-                        Sign up
-                    </button>
-                </div>
-            </div>
-        </div>
+  <div class="gradient-container">
+    <div class="particles-container">
+      <div v-for="n in particleCount" :key="n" class="particle" :style="{
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        width: `${10 + Math.random() * 40}px`,
+        height: `${10 + Math.random() * 40}px`,
+        animationDelay: `${Math.random() * 2}s`,
+        animationDuration: `${4 + Math.random() * 8}s`,
+        opacity: 0.2 + Math.random() * 0.6,
+        backgroundColor: n % 3 === 0 ? 'rgba(100, 255, 255, 0.3)' :
+          n % 3 === 1 ? 'rgba(180, 180, 255, 0.3)' :
+            'rgba(255, 255, 255, 0.3)'
+      }"></div>
     </div>
+    <div class="content">
+      <div class="login-wrapper">
+        <div class="left-img"></div>
+        <div class="right-login-form">
+          <div class="form-wrapper">
+            <br />
+            <div id="info" :class="infoClass" :style="{ color: '#e14e74' }">
+              {{ infoText }}
+            </div>
+            <div class="input-items">
+              <span class="input-tips">📮邮箱</span>
+              <input type="text" v-model="email" class="inputs" placeholder="请输入用户名~" />
+            </div>
+            <div class="input-items">
+              <span class="input-tips">🔑密码</span>
+              <input type="password" v-model="password" class="inputs" placeholder="请输入密码~" />
+              <span class="forgot">忘记密码?</span>
+            </div>
+            <button type="button" class="btn" @click="handleLogin">
+              立即登录
+            </button>
+            <div class="siginup-tips">
+              <span>没有账号?</span>
+              <span id="register" @click="goTo('/register')">立即注册</span>
+            </div>
+            <br />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-const containerRef = ref(null);
-const titleRef = ref(null);
-const descriptionRef = ref(null);
-const imageContainerRef = ref(null);
-const tryNowRef = ref(null);
-const signUpRef = ref(null);
-const isMouseEntered = ref(false);
-const handleMouseMove = (e) => {
-    if (!containerRef.value) return;
-    const { left, top, width, height } = containerRef.value.getBoundingClientRect();
-    const x = (e.clientX - left - width / 2) / 25;
-    const y = (e.clientY - top - height / 2) / 25;
-    containerRef.value.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
-};
+import { ElMessage } from 'element-plus'
+import { ref } from 'vue'
+import Cookies from 'js-cookie';
+import { useRouter } from 'vue-router'
+import { login } from '@/js/user';
+const particleCount = ref(40);
+const email = ref('')
+const password = ref('')
+const infoText = ref('')
+const infoClass = ref('')
+const router = useRouter()
 
-const handleMouseEnter = () => {
-    isMouseEntered.value = true;
-};
+const handleLogin = async () => {
+  if (!email.value || !password.value) {
+    infoText.value = '请输入用户名或密码~'
+    infoClass.value = 'error'
+  } else {
+    let params = {
+      "email": email.value,
+      "password": password.value
+    }
+    const res = await login(params)
 
-const handleMouseLeave = () => {
-    if (!containerRef.value) return;
-    isMouseEntered.value = false;
-    containerRef.value.style.transform = `rotateY(0deg) rotateX(0deg)`;
-};
-
-// Helper function to get transform style for card items
-const getItemStyle = (translateZ = 0, translateX = 0, translateY = 0, rotateX = 0, rotateY = 0, rotateZ = 0) => {
-    if (isMouseEntered.value) {
-        return {
-            transform: `translateX(${translateX}px) translateY(${translateY}px) translateZ(${translateZ}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`
-        };
+    if (res.status === 200) {
+      ElMessage({
+        message: "登录成功～",
+        type: 'success',
+      })
+      let user_info = res.data.data
+      Cookies.set('user_id', user_info['user_id'], { expires: 365 });
+      Cookies.set('user_name', user_info['user_name'], { expires: 365 });
+      goTo('/indexPage');
     } else {
-        return {
-            transform: 'translateX(0px) translateY(0px) translateZ(0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)'
-        };
+      ElMessage({
+        message: "网络异常，请稍后再试～",
+        type: 'error',
+      })
     }
-};
-watch(isMouseEntered, () => {
-});
+  }
+}
+
+const goTo = (path) => {
+  router.push(path)
+}
 </script>
-
-<style scoped>
-.card-container {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    perspective: 1000px;
-}
-
-.card-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    transition: all 200ms linear;
-    transform-style: preserve-3d;
-}
-
-.card-body {
-    background-color: rgb(249, 250, 251);
-    position: relative;
-    width: auto;
-    height: auto;
-    border-radius: 0.75rem;
-    padding: 1.5rem;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    height: 24rem;
-    width: 24rem;
-    transform-style: preserve-3d;
-}
-
-.card-body>* {
-    transform-style: preserve-3d;
-}
-
-.dark .card-body {
-    background-color: black;
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.dark .card-body:hover {
-    box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.1);
-}
-
-.card-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: rgb(82, 82, 91);
-    width: fit-content;
-    transition: duration-200 ease-linear;
-}
-
-.dark .card-title {
-    color: white;
-}
-
-.card-description {
-    color: rgb(115, 115, 115);
-    font-size: 0.875rem;
-    max-width: 24rem;
-    margin-top: 0.5rem;
-    width: fit-content;
-    transition: duration-200 ease-linear;
-}
-
-.dark .card-description {
-    color: rgb(163, 163, 163);
-}
-
-.card-image-container {
-    width: 100%;
-    margin-top: 1rem;
-    transition: duration-200 ease-linear;
-}
-
-.card-image {
-    height: 15rem;
-    width: 100%;
-    object-fit: cover;
-    border-radius: 0.75rem;
-}
-
-.group-hover\/card .card-image {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-.card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 5rem;
-}
-
-.try-now-link {
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-radius: 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 400;
-    width: fit-content;
-    transition: duration-200 ease-linear;
-}
-
-.dark .try-now-link {
-    color: white;
-}
-
-.sign-up-button {
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-radius: 0.75rem;
-    background-color: black;
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 700;
-    width: fit-content;
-    transition: duration-200 ease-linear;
-}
-
-.dark .sign-up-button {
-    background-color: white;
-    color: black;
-}
-
-@media (min-width: 640px) {
-    .card-body {
-        width: 30rem;
-    }
-}
-
-.dark {
-    color-scheme: dark;
-}
-</style>

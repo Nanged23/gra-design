@@ -285,7 +285,7 @@
           数据一览
         </button>
         <div class="footer">
-          <span style="margin-right: 10px; cursor: pointer;" @click="goTo('/')">
+          <span style="margin-right: 10px; cursor: pointer;" @click="goTo('/indexPage')">
             <svg t="1741613695588" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
               p-id="12342" id="mx_n_1741613695589" width="30" height="30">
               <path
@@ -337,20 +337,18 @@ const router = useRouter();
 const route = useRoute();
 const activePath = ref(route.path.replace('/', '') || 'default');
 const backgroundImage = ref('');
-
+backgroundImage.value=`${require('@/assets/pngs/back.png')}`;
 const goTo = (path) => {
   router.push(path);
   activePath.value = path.replace('/', '');
-
 };
 
 watch(() => route.path, (newPath) => {
   activePath.value = newPath;
   console.log(newPath);
-
   switch (true) {
     case newPath === '/article':
-      backgroundImage.value = `${require('@/assets/pngs/purple.png')}`;
+      backgroundImage.value = `${require('@/assets/pngs/back2.png')}`;
       break;
     case newPath === '/moment':
       backgroundImage.value = `${require('@/assets/pngs/girl.png')}`;

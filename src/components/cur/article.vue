@@ -35,6 +35,7 @@
     justify-content: center;
     flex-direction: column;
     align-items: center;
+    margin-left: 210px;
 }
 
 .pagination {
@@ -149,54 +150,54 @@
 </style>
 <template>
     <div class="container">
-        <div class="all">
-            <div class="writeLogo" @click="goTo('/writeArticle')">
-                <svg t="1742131249746" class="icon" viewBox="0 0 1024 1024" version="1.1"
-                    xmlns="http://www.w3.org/2000/svg" p-id="10145">
-                    <path
-                        d="M258.56 916.48c-30.72 0-64-5.12-92.16-15.36-64-23.04-97.28-69.12-99.84-128-2.56-89.6 66.56-120.32 120.32-143.36 51.2-23.04 79.36-35.84 79.36-74.24 0-46.08-79.36-84.48-112.64-89.6-12.8-5.12-20.48-17.92-20.48-30.72 2.56-12.8 15.36-23.04 28.16-20.48 46.08 7.68 156.16 56.32 156.16 140.8 0 74.24-61.44 99.84-110.08 120.32-56.32 25.6-92.16 43.52-89.6 97.28 0 38.4 23.04 66.56 64 81.92 66.56 25.6 166.4 7.68 192-23.04 10.24-10.24 25.6-12.8 35.84-2.56 10.24 10.24 12.8 25.6 2.56 35.84-25.6 30.72-89.6 51.2-153.6 51.2z"
-                        fill="#858E9E" p-id="10146"></path>
-                    <path
-                        d="M435.2 757.76c-5.12 5.12 2.56 17.92 12.8 25.6s23.04 10.24 28.16 5.12l107.52-81.92-102.4-74.24-46.08 125.44zM929.28 120.32c-28.16-20.48-69.12-15.36-89.6 15.36L509.44 591.36l102.4 74.24 332.8-455.68c20.48-28.16 12.8-69.12-15.36-89.6z"
-                        fill="#525C6A" p-id="10147"></path>
-                </svg>
-            </div>
-            <div v-for="post in blogPost.items" :key="post.id" class="blog-post-card" @click="fetchAndGo(post)">
-                <div class="image-container" :style="{ backgroundImage: dynamicColor(post) }" />
-                <div class="content-container">
-                    <h2 class="title">{{ post.title }}</h2>
-                    <p class="content">{{ post.content }}</p>
-                    <div class="meta-info">
-                        <span>
-                            <el-icon>
-                                <component :is="Timer" />
-                            </el-icon>{{ formatDate(post.modify_time) }}</span>
-                        <span>/</span>
-                        <span>
-                            <el-icon>
-                                <component :is="View" />
-                            </el-icon>
-                            {{ post.views_count }}
-                        </span>
-                        <span>/</span>
-                        <span>
-                            <el-icon>
-                                <component :is="PriceTag" />
-                            </el-icon>
-                            <span v-for="(tag, index) in splitTags(post.tags)" :key="index" class="tag">
-                                {{ tag }}
-                            </span>
-                        </span>
 
-                    </div>
+        <div class="writeLogo" @click="goTo('/writeArticle')">
+            <svg t="1742131249746" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                p-id="10145">
+                <path
+                    d="M258.56 916.48c-30.72 0-64-5.12-92.16-15.36-64-23.04-97.28-69.12-99.84-128-2.56-89.6 66.56-120.32 120.32-143.36 51.2-23.04 79.36-35.84 79.36-74.24 0-46.08-79.36-84.48-112.64-89.6-12.8-5.12-20.48-17.92-20.48-30.72 2.56-12.8 15.36-23.04 28.16-20.48 46.08 7.68 156.16 56.32 156.16 140.8 0 74.24-61.44 99.84-110.08 120.32-56.32 25.6-92.16 43.52-89.6 97.28 0 38.4 23.04 66.56 64 81.92 66.56 25.6 166.4 7.68 192-23.04 10.24-10.24 25.6-12.8 35.84-2.56 10.24 10.24 12.8 25.6 2.56 35.84-25.6 30.72-89.6 51.2-153.6 51.2z"
+                    fill="#858E9E" p-id="10146"></path>
+                <path
+                    d="M435.2 757.76c-5.12 5.12 2.56 17.92 12.8 25.6s23.04 10.24 28.16 5.12l107.52-81.92-102.4-74.24-46.08 125.44zM929.28 120.32c-28.16-20.48-69.12-15.36-89.6 15.36L509.44 591.36l102.4 74.24 332.8-455.68c20.48-28.16 12.8-69.12-15.36-89.6z"
+                    fill="#525C6A" p-id="10147"></path>
+            </svg>
+        </div>
+        <div v-for="post in blogPost.items" :key="post.id" class="blog-post-card" @click="fetchAndGo(post)">
+            <div class="image-container" :style="{ backgroundImage: dynamicColor(post) }" />
+            <div class="content-container">
+                <h2 class="title">{{ post.title }}</h2>
+                <p class="content">{{ post.content }}</p>
+                <div class="meta-info">
+                    <span>
+                        <el-icon>
+                            <component :is="Timer" />
+                        </el-icon>{{ formatDate(post.modify_time) }}</span>
+                    <span>/</span>
+                    <span>
+                        <el-icon>
+                            <component :is="View" />
+                        </el-icon>
+                        {{ post.views_count }}
+                    </span>
+                    <span>/</span>
+                    <span>
+                        <el-icon>
+                            <component :is="PriceTag" />
+                        </el-icon>
+                        <span v-for="(tag, index) in splitTags(post.tags)" :key="index" class="tag">
+                            {{ tag }}
+                        </span>
+                    </span>
+
                 </div>
             </div>
-            <div class="pagination"> <span> => 共{{ total_items }}条数据 <= </span>
-                        <el-pagination background layout="prev, pager, next" :current-page="currentPage"
-                            :page-count="total_pages" @current-change="handlePageChange" />
-            </div>
+        </div>
+        <div class="pagination"> <span> => 共{{ total_items }}条数据 <= </span>
+                    <el-pagination background layout="prev, pager, next" :current-page="currentPage"
+                        :page-count="total_pages" @current-change="handlePageChange" />
         </div>
     </div>
+
 </template>
 
 <script setup>
