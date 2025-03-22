@@ -348,7 +348,7 @@ watch(() => route.path, (newPath) => {
   console.log(newPath);
   switch (true) {
     case newPath === '/article':
-      backgroundImage.value = `${require('@/assets/pngs/back2.png')}`;
+      backgroundImage.value = `${require('@/assets/pngs/back.png')}`;
       break;
     case newPath === '/moment':
       backgroundImage.value = `${require('@/assets/pngs/girl.png')}`;
