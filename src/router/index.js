@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import article_analyse from '@/components/analyse/article_analyse.vue';
 import moment_analyse from '@/components/analyse/moment_analyse.vue';
 import todo_analyse from '@/components/analyse/todo_analyse.vue';
+import douban_analyse from '@/components/analyse/douban_analyse.vue';
+import weread_analyse from '@/components/analyse/weread_analyse.vue';
 import article from '@/components/cur/article.vue';
 import moment from '@/components/cur/moment.vue';
 import todo from '@/components/cur/todo.vue';
@@ -47,6 +49,16 @@ const routes = [
                 path: '/analyse/todo',
                 name: 'todo_analyse',
                 component: todo_analyse,
+            },
+            {
+                path: '/analyse/douban',
+                name: 'douban_analyse',
+                component: douban_analyse,
+            },
+            {
+                path: '/analyse/weread',
+                name: 'weread_analyse',
+                component: weread_analyse,
             },
             {
                 path: '/moment',

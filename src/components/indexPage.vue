@@ -1,4 +1,34 @@
 <style scoped>
+::-webkit-scrollbar {
+  width: 10px;
+  /* 设置滚动条宽度 */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  /* 滚动条轨道背景 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  /* 滚动条滑块颜色 */
+  border-radius: 5px;
+  /* 圆角 */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  /* 鼠标悬停时的颜色 */
+}
+
+/* 针对 Firefox */
+* {
+  scrollbar-width: none;
+  /* 设置滚动条宽度：auto | thin | none */
+  scrollbar-color: #888 #f1f1f1;
+  /* 滑块颜色 轨道颜色 */
+}
+
 .logo img {
   transition: transform 1.5s linear;
 }
@@ -337,7 +367,7 @@ const router = useRouter();
 const route = useRoute();
 const activePath = ref(route.path.replace('/', '') || 'default');
 const backgroundImage = ref('');
-backgroundImage.value=`${require('@/assets/pngs/back.png')}`;
+backgroundImage.value = `${require('@/assets/pngs/sky.png')}`;
 const goTo = (path) => {
   router.push(path);
   activePath.value = path.replace('/', '');
@@ -360,7 +390,10 @@ watch(() => route.path, (newPath) => {
       backgroundImage.value = `${require('@/assets/pngs/grid.png')}`;
       break;
     case newPath === '/third/douban':
-      backgroundImage.value = `${require('@/assets/pngs/grid.png')}`;
+      backgroundImage.value = `${require('@/assets/pngs/douban-back.png')}`;
+      break;
+    case newPath === '/third/weread':
+      backgroundImage.value = `${require('@/assets/pngs/night.png')}`;
       break;
     case newPath === '/analyse':
       backgroundImage.value = `${require('@/assets/pngs/grassland1.png')}`;

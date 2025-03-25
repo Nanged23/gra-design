@@ -165,19 +165,7 @@
   cursor: pointer;
 }
 
-@media (max-width: 1024px) {
-  .login-wrapper {
-    padding: 20px;
-  }
-
-  .left-img {
-    display: none;
-  }
-
-  .right-login-form {
-    padding: 20px;
-  }
-}
+ 
 </style>
 <template>
   <div class="gradient-container">
