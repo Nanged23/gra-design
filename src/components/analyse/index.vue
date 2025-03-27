@@ -148,8 +148,8 @@ onMounted(() => {
         y: Math.random() * windowHeight,
         size: Math.random() * 20 + 5,
         color: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.3)`,
-        randomX: Math.random() * 100 - 50,
-        randomY: Math.random() * 100 - 50,
+        randomX: Math.random() * 200 - 50,
+        randomY: Math.random() * 200 - 50,
         duration: 5 + Math.random() * 10,
     }))
 
@@ -218,7 +218,7 @@ onMounted(() => {
     max-height: 600px;
     z-index: 10;
     animation: appearWithScale 1.2s ease-out forwards,
-        rotateRing 1.3s ease-in-out 1.2s forwards;
+        rotateRing 1.3s ease-in-out 0.5s forwards;
 }
 
 .ring-svg {

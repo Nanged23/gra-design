@@ -19,80 +19,85 @@ import writeArticle from '@/components/cur/writeArticle.vue';
 import indexPage from '@/components/indexPage.vue';
 const routes = [
     {
+        path: '/',
+        name: '/login',
+        component: login
+    },
+    {
         path: '/indexPage',
         name: 'indexPage',
         component: indexPage,
         children: [{
-            path: '',  
+            path: '',
             name: 'defaultPage',
             component: defaultPage
         },
-              {
-                path: '/settings',
-                name: 'settings',
-                component: settings
-            },
-            {
-                path: '/article',
-                name: 'article',
-                component: article
-            }, {
-                path: '/analyse/article',
-                name: 'article_analyse',
-                component: article_analyse,
-            }, {
-                path: '/analyse/moment',
-                name: 'moment_analyse',
-                component: moment_analyse,
-            },
-            {
-                path: '/analyse/todo',
-                name: 'todo_analyse',
-                component: todo_analyse,
-            },
-            {
-                path: '/analyse/douban',
-                name: 'douban_analyse',
-                component: douban_analyse,
-            },
-            {
-                path: '/analyse/weread',
-                name: 'weread_analyse',
-                component: weread_analyse,
-            },
-            {
-                path: '/moment',
-                name: 'moment',
-                component: moment
-            }, {
-                path: '/todo',
-                name: 'todo',
-                component: todo
-            },
-            {
-                path: '/third/douban',
-                name: 'douban',
-                component: douban,
-            },
-            {
-                path: '/third/weread',
-                name: 'weread',
-                component: weread,
-            }, {
-                path: '/analyse/index',
-                name: 'index',
-                component: index,
-            },
-            {
-                path: '/articleDetail/:slug',
-                name: 'articleDetail',
-                component: articleDetail,
-            },
-            {
-                path: '/writeArticle',
-                name: 'writeArticle',
-                component: writeArticle,
-            }
+        {
+            path: '/settings',
+            name: 'settings',
+            component: settings
+        },
+        {
+            path: '/article',
+            name: 'article',
+            component: article
+        }, {
+            path: '/analyse/article',
+            name: 'article_analyse',
+            component: article_analyse,
+        }, {
+            path: '/analyse/moment',
+            name: 'moment_analyse',
+            component: moment_analyse,
+        },
+        {
+            path: '/analyse/todo',
+            name: 'todo_analyse',
+            component: todo_analyse,
+        },
+        {
+            path: '/analyse/douban',
+            name: 'douban_analyse',
+            component: douban_analyse,
+        },
+        {
+            path: '/analyse/weread',
+            name: 'weread_analyse',
+            component: weread_analyse,
+        },
+        {
+            path: '/moment',
+            name: 'moment',
+            component: moment
+        }, {
+            path: '/todo',
+            name: 'todo',
+            component: todo
+        },
+        {
+            path: '/third/douban',
+            name: 'douban',
+            component: douban,
+        },
+        {
+            path: '/third/weread',
+            name: 'weread',
+            component: weread,
+        }, {
+            path: '/analyse/index',
+            name: 'index',
+            component: index,
+        },
+        {
+            path: '/articleDetail/:slug',
+            name: 'articleDetail',
+            component: articleDetail,
+        },
+        {
+            path: '/writeArticle',
+            name: 'writeArticle',
+            component: writeArticle,
+        }
         ]
     },
     {

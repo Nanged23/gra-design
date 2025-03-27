@@ -126,7 +126,7 @@
   opacity: 1;
 }
 
-.title {
+.menu-title {
   color: #ffffff;
   font-size: 18px;
   margin-top: 10px;
@@ -255,7 +255,7 @@
           </button>
         </div>
         <!-- 菜单区 -->
-        <div class="title"> - 文字织梦，心随笔动 - </div>
+        <div class="menu-title"> - 文字织梦，心随笔动 - </div>
         <button class="value" :class="{ 'active': activePath === '/article' }" @click="goTo('/article')">
           <Newspaper size="16px" />
           文章
@@ -268,7 +268,7 @@
           <square-check-big size="16px" />
           TODO
         </button>
-        <div class="title">- 他山之石，可以攻玉 -</div>
+        <div class="menu-title">- 他山之石，可以攻玉 -</div>
         <button class="value" :class="{ 'active': activePath === '/third/douban' }" @click="goTo('/third/douban')">
           <svg t="1741529655996" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
             p-id="21642" id="mx_n_1741529655996" width="20" height="20">
@@ -296,7 +296,7 @@
           </svg>
           微信读书
         </button>
-        <div class="title">- 时光流转，岁月长歌 -</div>
+        <div class="menu-title">- 时光流转，岁月长歌 -</div>
         <button class="value" :class="{ 'active': activePath === '/analyse/index' }" @click="goTo('/analyse/index')">
           <svg t="1741529828911" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
             p-id="23816" width="20" height="20">
@@ -400,6 +400,15 @@ watch(() => route.path, (newPath) => {
       break;
     case newPath === '/writeArticle':
       backgroundImage.value = `${require('@/assets/pngs/write-article.png')}`;
+      break;
+    case newPath === '/analyse/article':
+      backgroundImage.value = `${require('@/assets/pngs/ana_article-back.png')}`;
+      break;
+    case newPath === '/analyse/todo':
+      backgroundImage.value = `${require('@/assets/pngs/ana_todo-back.png')}`;
+      break;
+    case newPath === '/analyse/douban':
+      backgroundImage.value = `${require('@/assets/pngs/ana_douban-back.png')}`;
       break;
     default:
       backgroundImage.value = `${require('@/assets/pngs/back.png')}`;
