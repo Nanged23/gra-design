@@ -1,382 +1,671 @@
+<!-- TODO 背景加上动感元素 -->
+<template>
+  <div class="settings-container">
+    <h1 class="settings-title" align="center">账户设置</h1>
+
+    <!-- 安全设置 -->
+    <div class="settings-section">
+      <h2 class="section-title" align='center'>安全设置</h2>
+
+      <!-- 修改密码 -->
+      <div class="settings-item">
+        <div class="settings-header">
+          <h3>修改密码</h3>
+          <p>更新您的账户密码</p>
+        </div>
+        <div class="settings-content">
+          <div class="form-group" v-if="!showPasswordForm">
+            <button class="btn-primary" @click="showPasswordForm = true">修改密码</button>
+          </div>
+          <div v-else class="form-fields">
+            <div class="form-group">
+              <label for="current-password">当前密码</label>
+              <input type="password" id="current-password" v-model="passwordForm.currentPassword"
+                placeholder="请输入当前密码" />
+            </div>
+            <div class="form-group">
+              <label for="new-password">新密码</label>
+              <input type="password" id="new-password" v-model="passwordForm.newPassword" placeholder="请输入新密码" />
+            </div>
+            <div class="form-group">
+              <label for="confirm-password">确认新密码</label>
+              <input type="password" id="confirm-password" v-model="passwordForm.confirmPassword"
+                placeholder="请再次输入新密码" />
+            </div>
+            <div class="form-group verification-code">
+              <label for="password-verification">邮箱验证码</label>
+              <div class="verification-input">
+                <input type="text" id="password-verification" v-model="passwordForm.verificationCode"
+                  placeholder="请输入验证码" />
+                <button class="btn-verification" @click="sendVerificationCode('password')"
+                  :disabled="passwordCodeSending">
+                  {{ passwordCodeSending ? `${passwordCountdown}秒后重试` : '获取验证码' }}
+                </button>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-cancel" @click="cancelPasswordChange">取消</button>
+              <button class="btn-primary" @click="updatePassword">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 修改邮箱 -->
+      <div class="settings-item">
+        <div class="settings-header">
+          <h3>修改邮箱</h3>
+          <p>当前邮箱: {{ userEmail }}</p>
+        </div>
+        <div class="settings-content">
+          <div class="form-group" v-if="!showEmailForm">
+            <button class="btn-primary" @click="showEmailForm = true">修改邮箱</button>
+          </div>
+          <div v-else class="form-fields">
+            <div class="form-group">
+              <label for="new-email">新邮箱地址</label>
+              <input type="email" id="new-email" v-model="emailForm.newEmail" placeholder="请输入新邮箱地址" />
+            </div>
+            <div class="form-group verification-code">
+              <label for="email-verification">邮箱验证码</label>
+              <div class="verification-input">
+                <input type="text" id="email-verification" v-model="emailForm.verificationCode" placeholder="请输入验证码" />
+                <button class="btn-verification" @click="sendVerificationCode('email')" :disabled="emailCodeSending">
+                  {{ emailCodeSending ? `${emailCountdown}秒后重试` : '获取验证码' }}
+                </button>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-cancel" @click="cancelEmailChange">取消</button>
+              <button class="btn-primary" @click="updateEmail">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 个人资料 -->
+    <div class="settings-section">
+      <h2 class="section-title" align='center'>个人资料</h2>
+
+      <!-- 修改用户名 -->
+      <div class="settings-item">
+        <div class="settings-header">
+          <h3>用户名</h3>
+          <p>当前用户名: {{ username }}</p>
+        </div>
+        <div class="settings-content">
+          <div class="form-group" v-if="!showUsernameForm">
+            <button class="btn-primary" @click="showUsernameForm = true">修改用户名</button>
+          </div>
+          <div v-else class="form-fields">
+            <div class="form-group">
+              <label for="new-username">新用户名</label>
+              <input type="text" id="new-username" v-model="usernameForm.newUsername" placeholder="请输入新用户名" />
+            </div>
+            <div class="form-actions">
+              <button class="btn-cancel" @click="cancelUsernameChange">取消</button>
+              <button class="btn-primary" @click="updateUsername">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 修改个性签名 -->
+      <div class="settings-item">
+        <div class="settings-header">
+          <h3>个性签名</h3>
+          <p>{{ bio || '暂无个性签名' }}</p>
+        </div>
+        <div class="settings-content">
+          <div class="form-group" v-if="!showBioForm">
+            <button class="btn-primary" @click="showBioForm = true">{{ bio ? '修改' : '添加' }}个性签名</button>
+          </div>
+          <div v-else class="form-fields">
+            <div class="form-group">
+              <label for="new-bio">个性签名</label>
+              <textarea id="new-bio" v-model="bioForm.newBio" placeholder="请输入个性签名" rows="3"></textarea>
+            </div>
+            <div class="form-actions">
+              <button class="btn-cancel" @click="cancelBioChange">取消</button>
+              <button class="btn-primary" @click="updateBio">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第三方平台绑定 -->
+    <div class="settings-section">
+      <h2 class="section-title" align="center">第三方平台绑定</h2>
+
+      <!-- 微信绑定 -->
+      <div class="settings-item">
+        <div class="settings-header">
+          <h3>微信绑定</h3>
+          <p>{{ wechatConnected ? '已绑定' : '未绑定' }}</p>
+        </div>
+        <div class="settings-content">
+          <div v-if="!showWechatForm">
+            <div class="form-group" v-if="wechatConnected">
+              <div class="connected-info">
+                <span>微信ID: {{ wechatId }}<br>微信TOKEN: **********</span>
+                <span></span>
+                <button class="btn-primary" @click="showWechatForm = true">修改绑定</button>
+              </div>
+            </div>
+            <div class="form-group" v-else>
+              <button class="btn-primary" @click="showWechatForm = true">绑定微信</button>
+            </div>
+          </div>
+          <div v-else class="form-fields">
+            <div class="form-group">
+              <label for="wechat-token">微信Token</label>
+              <input type="text" id="wechat-token" v-model="wechatForm.token" placeholder="请输入微信Token" />
+            </div>
+            <div class="form-group">
+              <label for="wechat-id">微信ID</label>
+              <input type="text" id="wechat-id" v-model="wechatForm.id" placeholder="请输入微信ID" />
+            </div>
+            <div class="form-actions">
+              <button class="btn-cancel" @click="cancelWechatChange">取消</button>
+              <button class="btn-primary" @click="updateWechat">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 豆瓣绑定 -->
+      <div class="settings-item">
+        <div class="settings-header">
+          <h3>豆瓣绑定</h3>
+          <p>{{ doubanConnected ? '已绑定' : '未绑定' }}</p>
+        </div>
+        <div class="settings-content">
+          <div v-if="!showDoubanForm">
+            <div class="form-group" v-if="doubanConnected">
+              <div class="connected-info">
+                <span>豆瓣ID: {{ doubanId }}</span>
+                <button class="btn-primary" @click="showDoubanForm = true">修改绑定</button>
+              </div>
+            </div>
+            <div class="form-group" v-else>
+              <button class="btn-primary" @click="showDoubanForm = true">绑定豆瓣</button>
+            </div>
+          </div>
+          <div v-else class="form-fields">
+            <div class="form-group">
+              <label for="douban-id">豆瓣ID</label>
+              <input type="text" id="douban-id" v-model="doubanForm.id" placeholder="请输入豆瓣ID" />
+            </div>
+            <div class="form-actions">
+              <button class="btn-cancel" @click="cancelDoubanChange">取消</button>
+              <button class="btn-primary" @click="updateDouban">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive } from 'vue';
+
+// 用户数据
+const username = ref('用户名示例');
+const userEmail = ref('example@email.com');
+const bio = ref('这是一段个性签名示例文字，展示用户的个人介绍和风格。');
+
+// 第三方平台绑定状态
+const wechatConnected = ref(true);
+const wechatId = ref('wechat123456');
+const wechatToken = ref('wxt_abcdef123456');
+const doubanConnected = ref(false);
+const doubanId = ref('');
+
+// 表单显示状态
+const showPasswordForm = ref(false);
+const showEmailForm = ref(false);
+const showUsernameForm = ref(false);
+const showBioForm = ref(false);
+const showWechatForm = ref(false);
+const showDoubanForm = ref(false);
+
+// 验证码发送状态
+const passwordCodeSending = ref(false);
+const emailCodeSending = ref(false);
+const passwordCountdown = ref(60);
+const emailCountdown = ref(60);
+
+// 表单数据
+const passwordForm = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+  verificationCode: ''
+});
+
+const emailForm = reactive({
+  newEmail: '',
+  verificationCode: ''
+});
+
+const usernameForm = reactive({
+  newUsername: ''
+});
+
+const bioForm = reactive({
+  newBio: bio.value
+});
+
+const wechatForm = reactive({
+  token: wechatToken.value,
+  id: wechatId.value
+});
+
+const doubanForm = reactive({
+  id: doubanId.value
+});
+
+// 发送验证码
+const sendVerificationCode = (type) => {
+  if (type === 'password') {
+    // 验证表单完整性
+    if (!passwordForm.currentPassword) {
+      alert('请输入当前密码');
+      return;
+    }
+    if (!passwordForm.newPassword) {
+      alert('请输入新密码');
+      return;
+    }
+    if (!passwordForm.confirmPassword) {
+      alert('请确认新密码');
+      return;
+    }
+    
+    // 验证表单合法性
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      alert('两次输入的密码不一致');
+      return;
+    }
+    
+    if (passwordForm.newPassword.length < 6) {
+      alert('新密码长度不能少于6位');
+      return;
+    }
+    
+    passwordCodeSending.value = true;
+    passwordCountdown.value = 60;
+    
+    const timer = setInterval(() => {
+      passwordCountdown.value--;
+      if (passwordCountdown.value <= 0) {
+        clearInterval(timer);
+        passwordCodeSending.value = false;
+      }
+    }, 1000);
+    
+    // 这里添加发送验证码的API调用
+    console.log('发送密码修改验证码');
+  } else if (type === 'email') {
+    // 验证表单完整性
+    if (!emailForm.newEmail) {
+      alert('请输入新邮箱地址');
+      return;
+    }
+    
+    // 验证表单合法性 - 邮箱格式
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailForm.newEmail)) {
+      alert('请输入有效的邮箱地址');
+      return;
+    }
+    
+    emailCodeSending.value = true;
+    emailCountdown.value = 60;
+    
+    const timer = setInterval(() => {
+      emailCountdown.value--;
+      if (emailCountdown.value <= 0) {
+        clearInterval(timer);
+        emailCodeSending.value = false;
+      }
+    }, 1000);
+    
+    // 这里添加发送验证码的API调用
+    console.log('发送邮箱修改验证码');
+  }
+};
+
+// 修改密码
+const updatePassword = () => {
+  // 验证表单
+  if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword || !passwordForm.verificationCode) {
+    alert('请填写完整信息');
+    return;
+  }
+
+  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+    alert('两次输入的密码不一致');
+    return;
+  }
+
+  // 这里添加修改密码的API调用
+  console.log('修改密码', passwordForm);
+
+  // 重置表单
+  passwordForm.currentPassword = '';
+  passwordForm.newPassword = '';
+  passwordForm.confirmPassword = '';
+  passwordForm.verificationCode = '';
+  showPasswordForm.value = false;
+};
+
+// 取消修改密码
+const cancelPasswordChange = () => {
+  passwordForm.currentPassword = '';
+  passwordForm.newPassword = '';
+  passwordForm.confirmPassword = '';
+  passwordForm.verificationCode = '';
+  showPasswordForm.value = false;
+};
+
+// 修改邮箱
+const updateEmail = () => {
+  // 验证表单
+  if (!emailForm.newEmail || !emailForm.verificationCode) {
+    alert('请填写完整信息');
+    return;
+  }
+
+  // 这里添加修改邮箱的API调用
+  console.log('修改邮箱', emailForm);
+
+  // 更新邮箱
+  userEmail.value = emailForm.newEmail;
+
+  // 重置表单
+  emailForm.newEmail = '';
+  emailForm.verificationCode = '';
+  showEmailForm.value = false;
+};
+
+// 取消修改邮箱
+const cancelEmailChange = () => {
+  emailForm.newEmail = '';
+  emailForm.verificationCode = '';
+  showEmailForm.value = false;
+};
+
+// 修改用户名
+const updateUsername = () => {
+  // 验证表单
+  if (!usernameForm.newUsername) {
+    alert('请填写新用户名');
+    return;
+  }
+
+  // 这里添加修改用户名的API调用
+  console.log('修改用户名', usernameForm);
+
+  // 更新用户名
+  username.value = usernameForm.newUsername;
+
+  // 重置表单
+  usernameForm.newUsername = '';
+  showUsernameForm.value = false;
+};
+
+// 取消修改用户名
+const cancelUsernameChange = () => {
+  usernameForm.newUsername = '';
+  showUsernameForm.value = false;
+};
+
+// 修改个性签名
+const updateBio = () => {
+  // 这里添加修改个性签名的API调用
+  console.log('修改个性签名', bioForm);
+
+  // 更新个性签名
+  bio.value = bioForm.newBio;
+
+  // 重置表单
+  showBioForm.value = false;
+};
+
+// 取消修改个性签名
+const cancelBioChange = () => {
+  bioForm.newBio = bio.value;
+  showBioForm.value = false;
+};
+
+// 修改微信绑定
+const updateWechat = () => {
+  // 验证表单
+  if (!wechatForm.token || !wechatForm.id) {
+    alert('请填写完整信息');
+    return;
+  }
+
+  // 这里添加修改微信绑定的API调用
+  console.log('修改微信绑定', wechatForm);
+
+  // 更新微信绑定
+  wechatConnected.value = true;
+  wechatToken.value = wechatForm.token;
+  wechatId.value = wechatForm.id;
+
+  // 重置表单
+  showWechatForm.value = false;
+};
+
+// 取消修改微信绑定
+const cancelWechatChange = () => {
+  wechatForm.token = wechatToken.value;
+  wechatForm.id = wechatId.value;
+  showWechatForm.value = false;
+};
+
+// 修改豆瓣绑定
+const updateDouban = () => {
+  // 验证表单
+  if (!doubanForm.id) {
+    alert('请填写豆瓣ID');
+    return;
+  }
+
+  // 这里添加修改豆瓣绑定的API调用
+  console.log('修改豆瓣绑定', doubanForm);
+
+  // 更新豆瓣绑定
+  doubanConnected.value = true;
+  doubanId.value = doubanForm.id;
+
+  // 重置表单
+  showDoubanForm.value = false;
+};
+
+// 取消修改豆瓣绑定
+const cancelDoubanChange = () => {
+  doubanForm.id = doubanId.value;
+  showDoubanForm.value = false;
+};
+</script>
 
 <style scoped>
-  .button {
-    --primary: #ff5569;
-    --neutral-1: #f7f8f7;
-    --neutral-2: #e7e7e7;
-    --radius: 14px;
-    margin-left:230px;
-    cursor: pointer;
-    border-radius: var(--radius);
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-    border: none;
-    box-shadow: 0 0.5px 0.5px 1px rgba(255, 255, 255, 0.2),
-      0 10px 20px rgba(0, 0, 0, 0.2), 0 4px 5px 0px rgba(0, 0, 0, 0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    transition: all 0.3s ease;
-    min-width: 200px;
-    padding: 20px;
-    height: 68px;
-    font-family: "Galano Grotesque", Poppins, Montserrat, sans-serif;
-    font-style: normal;
-    font-size: 18px;
-    font-weight: 600;
-  }
-  .button:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 1px 2px rgba(255, 255, 255, 0.3),
-      0 15px 30px rgba(0, 0, 0, 0.3), 0 10px 3px -3px rgba(0, 0, 0, 0.04);
-  }
-  .button:active {
-    transform: scale(1);
-    box-shadow: 0 0 1px 2px rgba(255, 255, 255, 0.3),
-      0 10px 3px -3px rgba(0, 0, 0, 0.2);
-  }
-  .button:after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: var(--radius);
-    border: 2.5px solid transparent;
-    background: linear-gradient(var(--neutral-1), var(--neutral-2)) padding-box,
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.45))
-        border-box;
-    z-index: 0;
-    transition: all 0.4s ease;
-  }
-  .button:hover::after {
-    transform: scale(1.05, 1.1);
-    box-shadow: inset 0 -1px 3px 0 rgba(255, 255, 255, 1);
-  }
-  .button::before {
-    content: "";
-    inset: 7px 6px 6px 6px;
-    position: absolute;
-    background: linear-gradient(to top, var(--neutral-1), var(--neutral-2));
-    border-radius: 30px;
-    filter: blur(0.5px);
-    z-index: 2;
-  }
-  .state p {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .state .icon {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    margin: auto;
-    transform: scale(1.25);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .state .icon svg {
-    overflow: visible;
-  }
+.settings-container {
+  margin-left: 330px;
+  max-width: 1000px;
+  padding: 20px;
+  background: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
 
-  /* Outline */
-  .outline {
-    position: absolute;
-    border-radius: inherit;
-    overflow: hidden;
-    z-index: 1;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    inset: -2px -3.5px;
-  }
-  .outline::before {
-    content: "";
-    position: absolute;
-    inset: -100%;
-    background: conic-gradient(
-      from 180deg,
-      transparent 60%,
-      white 80%,
-      transparent 100%
-    );
-    animation: spin 2s linear infinite;
-    animation-play-state: paused;
-  }
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-  .button:hover .outline {
-    opacity: 1;
-  }
-  .button:hover .outline::before {
-    animation-play-state: running;
-  }
+.settings-title {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #1e1d1d;
+}
 
-  /* Letters */
-  .state p span {
-    display: block;
-    opacity: 0;
-    animation: slideDown 0.8s ease forwards calc(var(--i) * 0.03s);
-  }
-  .button:hover p span {
-    opacity: 1;
-    animation: wave 0.5s ease forwards calc(var(--i) * 0.02s);
-  }
-  .button:focus p span {
-    opacity: 1;
-    animation: disapear 0.6s ease forwards calc(var(--i) * 0.03s);
-  }
-  @keyframes wave {
-    30% {
-      opacity: 1;
-      transform: translateY(4px) translateX(0) rotate(0);
-    }
-    50% {
-      opacity: 1;
-      transform: translateY(-3px) translateX(0) rotate(0);
-      color: var(--primary);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0) translateX(0) rotate(0);
-    }
-  }
-  @keyframes slideDown {
-    0% {
-      opacity: 0;
-      transform: translateY(-20px) translateX(5px) rotate(-90deg);
-      color: var(--primary);
-      filter: blur(5px);
-    }
-    30% {
-      opacity: 1;
-      transform: translateY(4px) translateX(0) rotate(0);
-      filter: blur(0);
-    }
-    50% {
-      opacity: 1;
-      transform: translateY(-3px) translateX(0) rotate(0);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0) translateX(0) rotate(0);
-    }
-  }
-  @keyframes disapear {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-      transform: translateX(5px) translateY(20px);
-      color: var(--primary);
-      filter: blur(5px);
-    }
-  }
+.settings-section {
+  margin-bottom: 32px;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  overflow: hidden;
+}
 
-  /* Plane */
-  .state--default .icon svg {
-    animation: land 0.6s ease forwards;
-  }
-  .button:hover .state--default .icon {
-    transform: rotate(45deg) scale(1.25);
-  }
-  .button:focus .state--default svg {
-    animation: takeOff 0.8s linear forwards;
-  }
-  .button:focus .state--default .icon {
-    transform: rotate(0) scale(1.25);
-  }
-  @keyframes takeOff {
-    0% {
-      opacity: 1;
-    }
-    60% {
-      opacity: 1;
-      transform: translateX(70px) rotate(45deg) scale(2);
-    }
-    100% {
-      opacity: 0;
-      transform: translateX(160px) rotate(45deg) scale(0);
-    }
-  }
-  @keyframes land {
-    0% {
-      transform: translateX(-60px) translateY(30px) rotate(-50deg) scale(2);
-      opacity: 0;
-      filter: blur(3px);
-    }
-    100% {
-      transform: translateX(0) translateY(0) rotate(0);
-      opacity: 1;
-      filter: blur(0);
-    }
-  }
+.section-title {
+  font-size: 18px;
+  font-weight: 500;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #eaeaea;
+  margin: 0;
+}
 
-  /* Contrail */
-  .state--default .icon:before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    height: 2px;
-    width: 0;
-    left: -5px;
-    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.5));
-  }
-  .button:focus .state--default .icon:before {
-    animation: contrail 0.8s linear forwards;
-  }
-  @keyframes contrail {
-    0% {
-      width: 0;
-      opacity: 1;
-    }
-    8% {
-      width: 15px;
-    }
-    60% {
-      opacity: 0.7;
-      width: 80px;
-    }
-    100% {
-      opacity: 0;
-      width: 160px;
-    }
-  }
+.settings-item {
+  padding: 16px;
+  border-bottom: 1px solid #eaeaea;
+}
 
-  /* States */
-  .state {
-    padding-left: 29px;
-    z-index: 2;
-    display: flex;
-    position: relative;
-  }
-  .state--default span:nth-child(4) {
-    margin-right: 5px;
-  }
-  .state--sent {
-    display: none;
-  }
-  .state--sent svg {
-    transform: scale(1.25);
-    margin-right: 8px;
-  }
-  .button:focus .state--default {
-    position: absolute;
-  }
-  .button:focus .state--sent {
-    display: flex;
-  }
-  .button:focus .state--sent span {
-    opacity: 0;
-    animation: slideDown 0.8s ease forwards calc(var(--i) * 0.2s);
-  }
-  .button:focus .state--sent .icon svg {
-    opacity: 0;
-    animation: appear 1.2s ease forwards 0.8s;
-  }
-  @keyframes appear {
-    0% {
-      opacity: 0;
-      transform: scale(4) rotate(-40deg);
-      color: var(--primary);
-      filter: blur(4px);
-    }
-    30% {
-      opacity: 1;
-      transform: scale(0.6);
-      filter: blur(1px);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.2);
-      filter: blur(0);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
+.settings-item:last-child {
+  border-bottom: none;
+}
+
+.settings-header {
+  margin-bottom: 16px;
+}
+
+.settings-header h3 {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 4px 0;
+  color: #333;
+}
+
+.settings-header p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-fields {
+  background-color: #f9f9f9;
+  padding: 16px;
+  border-radius: 6px;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+input,
+textarea {
+  width: 96%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  background-color: #fff;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.verification-code {
+  margin-bottom: 16px;
+}
+
+.verification-input {
+  display: flex;
+  gap: 8px;
+}
+
+.verification-input input {
+  flex: 1;
+}
+
+.btn-verification {
+  white-space: nowrap;
+  padding: 0 12px;
+  height: 40px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+.btn-verification:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-primary {
+  padding: 8px 16px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #3a80d2;
+}
+
+.btn-cancel {
+  padding: 8px 16px;
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background-color: #e5e5e5;
+}
+
+.connected-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.connected-info span {
+  font-size: 14px;
+  color: #666;
+}
 </style>
-
-<template>
-  <button class="button">
-    <div class="outline"></div>
-    <div class="state state--default">
-      <div class="icon">
-        <svg
-          width="1em"
-          height="1em"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <g style="filter: url(#shadow)">
-            <path
-              d="M14.2199 21.63C13.0399 21.63 11.3699 20.8 10.0499 16.83L9.32988 14.67L7.16988 13.95C3.20988 12.63 2.37988 10.96 2.37988 9.78001C2.37988 8.61001 3.20988 6.93001 7.16988 5.60001L15.6599 2.77001C17.7799 2.06001 19.5499 2.27001 20.6399 3.35001C21.7299 4.43001 21.9399 6.21001 21.2299 8.33001L18.3999 16.82C17.0699 20.8 15.3999 21.63 14.2199 21.63ZM7.63988 7.03001C4.85988 7.96001 3.86988 9.06001 3.86988 9.78001C3.86988 10.5 4.85988 11.6 7.63988 12.52L10.1599 13.36C10.3799 13.43 10.5599 13.61 10.6299 13.83L11.4699 16.35C12.3899 19.13 13.4999 20.12 14.2199 20.12C14.9399 20.12 16.0399 19.13 16.9699 16.35L19.7999 7.86001C20.3099 6.32001 20.2199 5.06001 19.5699 4.41001C18.9199 3.76001 17.6599 3.68001 16.1299 4.19001L7.63988 7.03001Z"
-              fill="currentColor"
-            ></path>
-            <path
-              d="M10.11 14.4C9.92005 14.4 9.73005 14.33 9.58005 14.18C9.29005 13.89 9.29005 13.41 9.58005 13.12L13.16 9.53C13.45 9.24 13.93 9.24 14.22 9.53C14.51 9.82 14.51 10.3 14.22 10.59L10.64 14.18C10.5 14.33 10.3 14.4 10.11 14.4Z"
-              fill="currentColor"
-            ></path>
-          </g>
-          <defs>
-            <filter id="shadow">
-              <fedropshadow
-                dx="0"
-                dy="1"
-                stdDeviation="0.6"
-                flood-opacity="0.5"
-              ></fedropshadow>
-            </filter>
-          </defs>
-        </svg>
-      </div>
-      <p>
-        
-        <span style="--i:0">保</span>
-        <span style="--i:1">存</span>
-        <span style="--i:2">设</span>
-        <span style="--i:3">置</span> 
-      </p>
-    </div>
-    <div class="state state--sent">
-      <div class="icon">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          height="1em"
-          width="1em"
-          stroke-width="0.5px"
-          stroke="black"
-        >
-          <g style="filter: url(#shadow)">
-            <path
-              fill="currentColor"
-              d="M12 22.75C6.07 22.75 1.25 17.93 1.25 12C1.25 6.07 6.07 1.25 12 1.25C17.93 1.25 22.75 6.07 22.75 12C22.75 17.93 17.93 22.75 12 22.75ZM12 2.75C6.9 2.75 2.75 6.9 2.75 12C2.75 17.1 6.9 21.25 12 21.25C17.1 21.25 21.25 17.1 21.25 12C21.25 6.9 17.1 2.75 12 2.75Z"
-            ></path>
-            <path
-              fill="currentColor"
-              d="M10.5795 15.5801C10.3795 15.5801 10.1895 15.5001 10.0495 15.3601L7.21945 12.5301C6.92945 12.2401 6.92945 11.7601 7.21945 11.4701C7.50945 11.1801 7.98945 11.1801 8.27945 11.4701L10.5795 13.7701L15.7195 8.6301C16.0095 8.3401 16.4895 8.3401 16.7795 8.6301C17.0695 8.9201 17.0695 9.4001 16.7795 9.6901L11.1095 15.3601C10.9695 15.5001 10.7795 15.5801 10.5795 15.5801Z"
-            ></path>
-          </g>
-        </svg>
-      </div>
-      <p>
-        <span style="--i:5">保</span>
-        <span style="--i:6">存</span>
-        <span style="--i:7">成</span>
-        <span style="--i:8">功</span>
-      </p>
-    </div>
-  </button>
-</template>

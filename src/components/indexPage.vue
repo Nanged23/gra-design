@@ -1,32 +1,24 @@
 <style scoped>
 ::-webkit-scrollbar {
   width: 10px;
-  /* 设置滚动条宽度 */
 }
 
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
-  /* 滚动条轨道背景 */
 }
 
 ::-webkit-scrollbar-thumb {
   background: #888;
-  /* 滚动条滑块颜色 */
   border-radius: 5px;
-  /* 圆角 */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
-  /* 鼠标悬停时的颜色 */
-}
-
-/* 针对 Firefox */
+  background: #555; 
+} 
 * {
   scrollbar-width: none;
   /* 设置滚动条宽度：auto | thin | none */
-  scrollbar-color: #888 #f1f1f1;
-  /* 滑块颜色 轨道颜色 */
+  scrollbar-color: #888 #f1f1f1; 
 }
 
 .logo img {
@@ -49,6 +41,7 @@
 
 .footer {
   margin-top: 10px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -315,28 +308,13 @@
           数据一览
         </button>
         <div class="footer">
-          <span style="margin-right: 10px; cursor: pointer;" @click="goTo('/indexPage')">
-            <svg t="1741613695588" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
-              p-id="12342" id="mx_n_1741613695589" width="30" height="30">
-              <path
-                d="M758.8 317.8h-71.6v59.6l71.6 55zM528.3 632.2c-3.1 5.1-8.6 8.2-14.5 8.2s-11.4-3.1-14.5-8.2C485.2 608.8 465.5 596 444 596c-28.1 0-54.2 22.1-61.9 52.5-5.7 22.3-12.5 100.2 131.7 181.8 144.3-81.6 137.5-159.6 131.8-181.8-7.8-30.4-33.8-52.5-62-52.5-21.5-0.1-41.1 12.8-55.3 36.2z"
-                fill="#FDB9D0" p-id="12343"></path>
-              <path
-                d="M908.2 547.2l-115.8-89c0.2-1.1 0.4-2.3 0.4-3.4v-154c0-9.4-7.6-17-17-17H670.3c-9.4 0-17 7.6-17 17v50.5l-129.1-99.2c-6.1-4.7-14.6-4.7-20.7 0l-384 295.1c-5.8 4.4-8.1 12-5.7 18.9 2.3 6.9 8.8 11.5 16.1 11.5H235v309.3c0 40.2 32.7 73 73 73h411.8c40.2 0 73-32.7 73-73V577.6h105.1c7.3 0 13.7-4.6 16.1-11.5 2.3-6.9 0-14.5-5.8-18.9z m-221-229.4h71.6v114.6l-71.6-55v-59.6z m71.6 569.1c0 21.5-17.5 39.1-39.1 39.1H307.9c-21.5 0-39.1-17.5-39.1-39.1V569.1l245-185.6 245 185.6v317.8z m22.7-343.2l-257.4-195c-6.1-4.6-14.4-4.6-20.5 0l-257.4 195h-66.5l334.1-256.8L848 543.7h-66.5z"
-                fill="#3EBAC4" p-id="12344"></path>
-              <path
-                d="M444 562c-44.1 0-83.1 32.1-94.8 78-6.2 24.3-7.4 62.9 21.7 109.3 26.3 42 71.7 80.7 134.8 115.2 2.5 1.4 5.3 2.1 8.1 2.1s5.6-0.7 8.1-2.1c63.1-34.4 108.5-73.2 134.8-115.2 29.1-46.4 27.9-85.1 21.7-109.3-11.7-45.9-50.7-78-94.8-78-26.6 0-50.7 11.5-69.8 32.8-19.1-21.3-43.2-32.8-69.8-32.8z m201.6 86.4c5.7 22.3 12.5 100.2-131.8 181.8-144.2-81.6-137.4-159.6-131.7-181.8 7.8-30.4 33.8-52.5 61.9-52.5 21.5 0 41.1 12.9 55.3 36.2 3.1 5.1 8.6 8.2 14.5 8.2s11.4-3.1 14.5-8.2c14.2-23.4 33.8-36.2 55.3-36.2 28.2 0 54.2 22.1 62 52.5zM714.9 248.6c2.5 1.4 5.3 2.1 8.1 2.1s5.6-0.7 8.1-2.1c36.6-20 63-42.6 78.5-67.3 17.8-28.3 16.9-52.2 13.1-67.2-7.4-29.1-32.3-49.4-60.5-49.4-14.4 0-28 5.5-39.2 15.5-11.2-10-24.8-15.5-39.2-15.5-28.2 0-53 20.3-60.5 49.4-3.8 15-4.7 38.9 13.1 67.2 15.5 24.7 41.9 47.3 78.5 67.3z m-58.7-126.1c3.5-13.8 15.1-23.9 27.6-23.9 9.5 0 18.1 5.8 24.7 16.8 3.1 5.1 8.6 8.2 14.5 8.2s11.4-3.1 14.5-8.2c6.7-11 15.2-16.8 24.7-16.8 12.5 0 24.1 10.1 27.6 23.9 5.7 22.5-9.1 57.9-66.8 91.7-57.7-33.8-72.5-69.2-66.8-91.7z"
-                fill="#3EBAC4" p-id="12345"></path>
-            </svg>
+          <span style=" cursor: pointer;" @click="goTo('/indexPage')">
+            <House color="#F5F5F4" />
           </span>
-          <span class="spliter">|</span>
-          <span style="margin-left: 10px;margin-top: 5px; cursor: pointer;" @click="goTo('/settings')">
-            <svg t="1741613877810" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
-              p-id="15079" width="20" height="20">
-              <path
-                d="M665.6 1024 665.6 1024c-19.2 0-38.4-6.4-51.2-19.2-12.8-19.2-64-64-108.8-64-38.4 0-89.6 51.2-108.8 64C390.4 1011.2 371.2 1024 352 1024c-6.4 0-19.2 0-25.6-6.4l0 0-128-76.8 0 0c-25.6-19.2-32-51.2-19.2-76.8 0 0 12.8-25.6 12.8-51.2 0-76.8-57.6-140.8-134.4-140.8L57.6 672c0 0 0 0 0 0-19.2 0-38.4-19.2-44.8-51.2C12.8 614.4 0 556.8 0 512c0-44.8 12.8-102.4 12.8-108.8 6.4-32 25.6-51.2 44.8-51.2l6.4 0c70.4 0 134.4-64 134.4-140.8C192 192 179.2 160 179.2 160c-12.8-25.6 0-57.6 19.2-76.8l0 0 134.4-76.8 0 0C345.6 0 352 0 358.4 0c19.2 0 38.4 6.4 51.2 19.2 12.8 19.2 64 64 102.4 64 38.4 0 89.6-44.8 102.4-64C633.6 6.4 646.4 0 665.6 0c6.4 0 19.2 0 25.6 6.4l0 0 128 76.8 0 0c25.6 19.2 32 51.2 19.2 76.8 0 0-12.8 25.6-12.8 51.2 0 76.8 57.6 140.8 134.4 140.8l6.4 0c19.2 0 38.4 19.2 44.8 51.2 0 0 12.8 57.6 12.8 108.8s-12.8 102.4-12.8 108.8c-6.4 32-25.6 51.2-44.8 51.2l-6.4 0c-70.4 0-134.4 64-134.4 140.8 0 25.6 12.8 51.2 12.8 51.2 12.8 25.6 0 57.6-19.2 76.8l0 0-128 76.8 0 0C684.8 1024 672 1024 665.6 1024L665.6 1024 665.6 1024M659.2 960C659.2 960 665.6 960 659.2 960 665.6 960 665.6 960 659.2 960l128-70.4c0-6.4-19.2-44.8-19.2-76.8 0-108.8 83.2-198.4 185.6-204.8 0-6.4 6.4-57.6 6.4-96 0-38.4-6.4-83.2-6.4-96C851.2 416 768 326.4 768 217.6c0-38.4 12.8-70.4 19.2-76.8L665.6 64c0 0 0 0 0 0 0 0-6.4 0-6.4 0 0 0-19.2 19.2-44.8 38.4C582.4 134.4 544 147.2 512 147.2 480 147.2 448 134.4 409.6 102.4 384 83.2 364.8 70.4 364.8 64c0 0 0 0-6.4 0 0 0 0 0 0 0L236.8 134.4C236.8 140.8 256 179.2 256 217.6c0 108.8-83.2 198.4-185.6 204.8 0 6.4-6.4 57.6-6.4 96 0 38.4 6.4 83.2 6.4 96C172.8 608 256 697.6 256 812.8c0 38.4-12.8 70.4-19.2 76.8L352 960c0 0 0 0 0 0 0 0 6.4 0 6.4 0 0 0 19.2-19.2 44.8-44.8 38.4-32 70.4-44.8 108.8-44.8 32 0 70.4 12.8 108.8 44.8C640 934.4 659.2 953.6 659.2 960L659.2 960 659.2 960M512 697.6c-96 0-179.2-83.2-179.2-185.6 0-102.4 76.8-185.6 179.2-185.6 96 0 179.2 83.2 179.2 185.6C684.8 614.4 608 697.6 512 697.6L512 697.6M512 390.4C448 390.4 390.4 441.6 390.4 512 390.4 582.4 448 633.6 512 633.6c64 0 115.2-57.6 115.2-121.6C627.2 441.6 576 390.4 512 390.4L512 390.4M512 390.4"
-                p-id="15080" fill="#3FBAC4"></path>
-            </svg>
+          <!-- <span class="spliter">|</span> -->
+          <EllipsisVertical Strokewidth="11px" color="#F5F5F4" />
+          <span style=" cursor: pointer;" @click="goTo('/settings')">
+            <Settings color="#F5F5F4" />
           </span>
         </div>
 
@@ -352,7 +330,7 @@
 import { useRouter, useRoute } from 'vue-router';
 import { ref, watch, nextTick } from 'vue';
 import SevenSegmentClock from './index/SevenSegmentClock.vue';
-import { SquareCheckBig, Camera, Newspaper, RefreshCcw } from 'lucide-vue-next';
+import { SquareCheckBig, Camera, Newspaper, RefreshCcw, EllipsisVertical, Settings, House } from 'lucide-vue-next';
 
 
 const contentLayer = ref(null);
@@ -378,26 +356,23 @@ watch(() => route.path, (newPath) => {
   console.log(newPath);
   switch (true) {
     case newPath === '/article':
-      backgroundImage.value = `${require('@/assets/pngs/back.png')}`;
+      backgroundImage.value = `${require('@/assets/pngs/article.png')}`;
       break;
     case newPath === '/moment':
-      backgroundImage.value = `${require('@/assets/pngs/girl.png')}`;
+      backgroundImage.value = `${require('@/assets/pngs/moment.png')}`;
       break;
     case newPath === '/todo':
-      backgroundImage.value = `${require('@/assets/pngs/grassland.png')}`;
+      backgroundImage.value = `${require('@/assets/pngs/todo.png')}`;
       break;
     case newPath.startsWith('/articleDetail'):
-      backgroundImage.value = `${require('@/assets/pngs/grid.png')}`;
+      backgroundImage.value = `${require('@/assets/pngs/article-detail.png')}`;
       break;
     case newPath === '/third/douban':
-      backgroundImage.value = `${require('@/assets/pngs/douban-back.png')}`;
+      backgroundImage.value = `${require('@/assets/pngs/douban.png')}`;
       break;
     case newPath === '/third/weread':
-      backgroundImage.value = `${require('@/assets/pngs/night.png')}`;
-      break;
-    case newPath === '/analyse':
-      backgroundImage.value = `${require('@/assets/pngs/grassland1.png')}`;
-      break;
+      backgroundImage.value = `${require('@/assets/pngs/weread.png')}`;
+      break; 
     case newPath === '/writeArticle':
       backgroundImage.value = `${require('@/assets/pngs/write-article.png')}`;
       break;
@@ -410,8 +385,12 @@ watch(() => route.path, (newPath) => {
     case newPath === '/analyse/douban':
       backgroundImage.value = `${require('@/assets/pngs/ana_douban-back.png')}`;
       break;
+    case newPath === '/settings':
+      backgroundImage.value = `${require('@/assets/pngs/settings1.png')}`;
+      break;
     default:
-      backgroundImage.value = `${require('@/assets/pngs/back.png')}`;
+    backgroundImage.value = `${require('@/assets/pngs/sky.png')}`;
+    break;
   }
 });
 
