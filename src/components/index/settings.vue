@@ -1,4 +1,3 @@
-<!-- TODO 背景加上动感元素 -->
 <template>
   <div class="settings-container">
     <h1 class="settings-title" align="center">账户设置</h1>
@@ -210,19 +209,73 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-
-// 用户数据
-const username = ref('用户名示例');
-const userEmail = ref('example@email.com');
-const bio = ref('这是一段个性签名示例文字，展示用户的个人介绍和风格。');
-
-// 第三方平台绑定状态
-const wechatConnected = ref(true);
-const wechatId = ref('wechat123456');
-const wechatToken = ref('wxt_abcdef123456');
+import { ref, reactive, onMounted } from 'vue';
+import { getUserDetail, updateUser, sendCode } from '@/js/index/indexPage.js';
+import Cookies from 'js-cookie';
+import { ElMessage } from 'element-plus';
+const username = ref('');
+const userEmail = ref('');
+const bio = ref('');
+const wechatConnected = ref(false);
+const wechatId = ref('');
+const wechatToken = ref('');
 const doubanConnected = ref(false);
 const doubanId = ref('');
+
+// 获取用户设置数据
+const fetchUserSettings = async () => {
+
+  let params = { "user_id": Cookies.get("user_id") }
+  const response = await getUserDetail(params);
+
+
+  const result = await response;
+
+  if (result.data[0] && result.data[0].email) {
+    userEmail.value = result.data[0].email;
+  }
+  if (result.data[1]) {
+    const userData = result.data[1];
+
+    // 设置用户名
+    if (userData.user_name) {
+      username.value = userData.user_name;
+    }
+
+    // 设置个性签名
+    if (userData.signature) {
+      bio.value = userData.signature;
+    }
+
+    // 设置微信绑定信息
+    if (userData.wechat_id) {
+      wechatConnected.value = true;
+      wechatId.value = userData.wechat_id;
+    }
+
+    if (userData.wechat_token) {
+      wechatToken.value = userData.wechat_token;
+    }
+
+    // 设置豆瓣绑定信息
+    if (userData.douban_id) {
+      doubanConnected.value = true;
+      doubanId.value = userData.douban_id;
+    }
+  }
+
+  // 初始化表单数据
+  bioForm.newBio = bio.value;
+  wechatForm.id = wechatId.value;
+  wechatForm.token = wechatToken.value;
+  doubanForm.id = doubanId.value;
+
+};
+
+// 在组件挂载时获取数据
+onMounted(() => {
+  fetchUserSettings();
+});
 
 // 表单显示状态
 const showPasswordForm = ref(false);
@@ -269,36 +322,51 @@ const doubanForm = reactive({
 });
 
 // 发送验证码
-const sendVerificationCode = (type) => {
+const sendVerificationCode = async (type) => {
   if (type === 'password') {
     // 验证表单完整性
     if (!passwordForm.currentPassword) {
-      alert('请输入当前密码');
+      ElMessage({
+        message: "请输入当前密码",
+        type: 'error',
+      });
       return;
     }
     if (!passwordForm.newPassword) {
-      alert('请输入新密码');
+      ElMessage({
+        message: "请输入新密码",
+        type: 'error',
+      });
       return;
     }
     if (!passwordForm.confirmPassword) {
-      alert('请确认新密码');
+      ElMessage({
+        message: "请确认新密码",
+        type: 'error',
+      });
       return;
     }
-    
+
     // 验证表单合法性
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      alert('两次输入的密码不一致');
+      ElMessage({
+        message: "两次输入的密码不一致",
+        type: 'error',
+      });
       return;
     }
-    
+
     if (passwordForm.newPassword.length < 6) {
-      alert('新密码长度不能少于6位');
+      ElMessage({
+        message: "新密码长度不能少于6位!",
+        type: 'error',
+      });
       return;
     }
-    
+
     passwordCodeSending.value = true;
     passwordCountdown.value = 60;
-    
+
     const timer = setInterval(() => {
       passwordCountdown.value--;
       if (passwordCountdown.value <= 0) {
@@ -306,26 +374,39 @@ const sendVerificationCode = (type) => {
         passwordCodeSending.value = false;
       }
     }, 1000);
-    
-    // 这里添加发送验证码的API调用
-    console.log('发送密码修改验证码');
+
+    let res = await sendCode({ "email": userEmail.value })
+    if (res.statusCode == 200) {
+      ElMessage({
+        message: "验证码发送成功～",
+        type: 'success',
+      });
+    }
+
   } else if (type === 'email') {
     // 验证表单完整性
     if (!emailForm.newEmail) {
-      alert('请输入新邮箱地址');
+      ElMessage({
+        message: "请输入新邮箱地址",
+        type: 'error',
+      });
+
       return;
     }
-    
+
     // 验证表单合法性 - 邮箱格式
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailForm.newEmail)) {
-      alert('请输入有效的邮箱地址');
+      ElMessage({
+        message: "请输入有效的邮箱地址",
+        type: 'error',
+      });
       return;
     }
-    
+
     emailCodeSending.value = true;
     emailCountdown.value = 60;
-    
+
     const timer = setInterval(() => {
       emailCountdown.value--;
       if (emailCountdown.value <= 0) {
@@ -333,27 +414,65 @@ const sendVerificationCode = (type) => {
         emailCodeSending.value = false;
       }
     }, 1000);
-    
-    // 这里添加发送验证码的API调用
-    console.log('发送邮箱修改验证码');
+
+    let res = await sendCode({ "email": emailForm.newEmail })
+    if (res.statusCode == 200) {
+      ElMessage({
+        message: "验证码发送成功～",
+        type: 'success',
+      });
+    }
   }
 };
 
 // 修改密码
-const updatePassword = () => {
+const updatePassword = async () => {
   // 验证表单
   if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword || !passwordForm.verificationCode) {
-    alert('请填写完整信息');
+    ElMessage({
+      message: "请填写完整信息",
+      type: 'error',
+    });
     return;
   }
 
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    alert('两次输入的密码不一致');
+    ElMessage({
+      message: "两次输入的密码不一致",
+      type: 'error',
+    });
     return;
   }
 
-  // 这里添加修改密码的API调用
-  console.log('修改密码', passwordForm);
+  try {
+    const params = {
+      user_id: Cookies.get("user_id"),
+      user: {
+        password: passwordForm.newPassword,
+        code: passwordForm.verificationCode,
+        email: userEmail.value
+      }
+    };
+
+    const response = await updateUser(params);
+    if (response && response.msg === 'success') {
+      ElMessage({
+        message: "密码修改成功",
+        type: 'success',
+      });
+
+    } else {
+      ElMessage({
+        message: "密码修改失败",
+        type: 'error',
+      });
+    }
+  } catch (error) {
+    ElMessage({
+      message: "密码修改失败",
+      type: 'error',
+    });
+  }
 
   // 重置表单
   passwordForm.currentPassword = '';
@@ -373,18 +492,45 @@ const cancelPasswordChange = () => {
 };
 
 // 修改邮箱
-const updateEmail = () => {
+const updateEmail = async () => {
   // 验证表单
   if (!emailForm.newEmail || !emailForm.verificationCode) {
-    alert('请填写完整信息');
+    ElMessage({
+      message: "请填写完整信息",
+      type: 'info',
+    });
     return;
   }
 
-  // 这里添加修改邮箱的API调用
-  console.log('修改邮箱', emailForm);
+  try {
+    const params = {
+      user_id: Cookies.get("user_id"),
+      user: {
+        email: emailForm.newEmail,
+        code: emailForm.verificationCode
+      }
+    };
 
-  // 更新邮箱
-  userEmail.value = emailForm.newEmail;
+    const response = await updateUser(params);
+    if (response && response.msg === 'success') {
+      // 更新邮箱
+      userEmail.value = emailForm.newEmail;
+      ElMessage({
+        message: "邮箱修改成功",
+        type: 'success',
+      });
+    } else {
+      ElMessage({
+        message: "邮箱修改失败",
+        type: 'error',
+      });
+    }
+  } catch (error) {
+    ElMessage({
+      message: "邮箱修改失败",
+      type: 'error',
+    });
+  }
 
   // 重置表单
   emailForm.newEmail = '';
@@ -400,18 +546,43 @@ const cancelEmailChange = () => {
 };
 
 // 修改用户名
-const updateUsername = () => {
+const updateUsername = async () => {
   // 验证表单
   if (!usernameForm.newUsername) {
-    alert('请填写新用户名');
+    ElMessage({
+      message: "请填写新用户名",
+      type: 'error',
+    });
     return;
   }
+  const params = {
+    user_id: Cookies.get("user_id"),
+    detail: {
+      user_name: usernameForm.newUsername
+    }
+  };
 
-  // 这里添加修改用户名的API调用
-  console.log('修改用户名', usernameForm);
-
-  // 更新用户名
-  username.value = usernameForm.newUsername;
+  try {
+    const response = await updateUser(params);
+    if (response && response.msg === 'success') {
+      // 更新用户名
+      username.value = usernameForm.newUsername;
+      ElMessage({
+        message: "用户名修改成功",
+        type: 'success',
+      });
+    } else {
+      ElMessage({
+        message: "用户名修改失败",
+        type: 'error',
+      });
+    }
+  } catch (error) {
+    ElMessage({
+      message: "用户名修改失败",
+      type: 'error',
+    });
+  }
 
   // 重置表单
   usernameForm.newUsername = '';
@@ -425,12 +596,35 @@ const cancelUsernameChange = () => {
 };
 
 // 修改个性签名
-const updateBio = () => {
-  // 这里添加修改个性签名的API调用
-  console.log('修改个性签名', bioForm);
+const updateBio = async () => {
+  try {
+    const params = {
+      user_id: Cookies.get("user_id"),
+      detail: {
+        signature: bioForm.newBio
+      }
+    };
 
-  // 更新个性签名
-  bio.value = bioForm.newBio;
+    const response = await updateUser(params);
+    if (response && response.msg === 'success') {
+      // 更新个性签名
+      bio.value = bioForm.newBio;
+      ElMessage({
+        message: "个性签名修改成功",
+        type: 'success',
+      });
+    } else {
+      ElMessage({
+        message: "个性签名修改失败",
+        type: 'error',
+      });
+    }
+  } catch (error) {
+    ElMessage({
+      message: "个性签名修改失败",
+      type: 'error',
+    });
+  }
 
   // 重置表单
   showBioForm.value = false;
@@ -443,20 +637,47 @@ const cancelBioChange = () => {
 };
 
 // 修改微信绑定
-const updateWechat = () => {
+const updateWechat = async () => {
   // 验证表单
   if (!wechatForm.token || !wechatForm.id) {
-    alert('请填写完整信息');
+    ElMessage({
+      message: "请填写完整信息",
+      type: 'error',
+    });
     return;
   }
 
-  // 这里添加修改微信绑定的API调用
-  console.log('修改微信绑定', wechatForm);
+  try {
+    const params = {
+      user_id: Cookies.get("user_id"),
+      detail: {
+        wechat_id: wechatForm.id,
+        wechat_token: wechatForm.token
+      }
+    };
 
-  // 更新微信绑定
-  wechatConnected.value = true;
-  wechatToken.value = wechatForm.token;
-  wechatId.value = wechatForm.id;
+    const response = await updateUser(params);
+    if (response && response.msg === 'success') {
+      // 更新微信绑定
+      wechatConnected.value = true;
+      wechatToken.value = wechatForm.token;
+      wechatId.value = wechatForm.id;
+      ElMessage({
+        message: "微信绑定修改成功",
+        type: 'success',
+      });
+    } else {
+      ElMessage({
+        message: "微信绑定修改失败",
+        type: 'error',
+      });
+    }
+  } catch (error) {
+    ElMessage({
+      message: "微信绑定修改失败",
+      type: 'error',
+    });
+  }
 
   // 重置表单
   showWechatForm.value = false;
@@ -470,19 +691,45 @@ const cancelWechatChange = () => {
 };
 
 // 修改豆瓣绑定
-const updateDouban = () => {
+const updateDouban = async () => {
   // 验证表单
   if (!doubanForm.id) {
-    alert('请填写豆瓣ID');
+    ElMessage({
+      message: "请填写豆瓣ID",
+      type: 'error',
+    });
     return;
   }
 
-  // 这里添加修改豆瓣绑定的API调用
-  console.log('修改豆瓣绑定', doubanForm);
+  try {
+    const params = {
+      user_id: Cookies.get("user_id"),
+      detail: {
+        douban_id: doubanForm.id
+      }
+    };
 
-  // 更新豆瓣绑定
-  doubanConnected.value = true;
-  doubanId.value = doubanForm.id;
+    const response = await updateUser(params);
+    if (response && response.msg === 'success') {
+      // 更新豆瓣绑定
+      doubanConnected.value = true;
+      doubanId.value = doubanForm.id;
+      ElMessage({
+        message: "豆瓣绑定修改成功",
+        type: 'success',
+      });
+    } else {
+      ElMessage({
+        message: "豆瓣绑定修改失败",
+        type: 'error',
+      });
+    }
+  } catch (error) {
+    ElMessage({
+      message: "豆瓣绑定修改失败",
+      type: 'error',
+    });
+  }
 
   // 重置表单
   showDoubanForm.value = false;

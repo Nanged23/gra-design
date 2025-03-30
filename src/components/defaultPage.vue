@@ -71,6 +71,7 @@
                         <div class="anniversary-info">
                             <div class="anniversary-name">{{ item.name }}</div>
                             <div class="anniversary-date">{{ item.date }}</div>
+                            <div class="anniversary-description" v-if="item.description">{{ item.description }}</div>
                         </div>
                         <div class="anniversary-days">还有 {{ item.daysLeft }} 天</div>
                         <div class="anniversary-icon">
@@ -93,19 +94,49 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue';
 import * as echarts from 'echarts';
 import { Calendar1, Cake, PencilRuler } from 'lucide-vue-next';
+import { getHotMap, getUserDetail, getMemDay } from '@/js/index/indexPage.js';
+import Cookie from 'js-cookie';
+const heatmapData = ref([]);
+const userData = ref(
+    {
+        username: '',
+        signature: '',
+        registeredDays: 0,
+        lastVisit: 0
+    }
+);
 
-// 用户数据
-const userData = ref({
-    username: '青山绿水',
-    signature: '生活不止眼前的苟且，还有诗和远方的田野。',
-    registeredDays: 365,
-    lastVisit: 3
-});
+const getUesrData = async () => {
+    let requestParams = { "user_id": Cookie.get("user_id") }
+    const hotmap_res = await getHotMap(requestParams);
+    // 转换热力图数据格式
+    heatmapData.value = Object.entries(hotmap_res.data.heatMap).map(([date, value]) => {
+        // 将 "20250327" 转换为 "2025-03-27"
+        const formattedDate = `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`;
+        // 将字符串值转换为数字
+        return [formattedDate, parseFloat(value)];
+    });
+    const user_info_res = await getUserDetail(requestParams);
+    userData.value = {
+        username: user_info_res.data[1].user_name,
+        signature: user_info_res.data[1].signature,
+        registeredDays: getTimeDiff(hotmap_res.data.createTime),
+        lastVisit: getTimeDiff(hotmap_res.data.lastLoginTime)
+    }
 
-// 当前日期相关计算
+};
+const getTimeDiff = (time1) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const eventDate = new Date(time1);
+    eventDate.setHours(0, 0, 0, 0);
+    const timeDiff = eventDate - today;
+    const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    return daysDiff < 0 ? -daysDiff : daysDiff
+}
 const now = new Date();
 const currentYear = now.getFullYear();
 const currentMonth = now.getMonth() + 1;
@@ -154,77 +185,78 @@ const monthRemaining = computed(() => {
 function isLeapYear(year) {
     return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
 }
-
-// 纪念日数据
-const anniversaryData = ref([
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    }).format(date)
+        .replace(/\//g, '.');
+}
+const anniversaryData = ref(
     {
-        name: '生日',
-        date: '2025.03.21',
-        daysLeft: 28,
-        icon: Cake
-    },
-    {
-        name: '考试',
-        date: '2025.02.28',
-        daysLeft: 7,
-        icon: PencilRuler
-    },
-    {
-        name: '节日',
-        date: '2025.12.31',
-        daysLeft: 313,
-        icon: Calendar1
+        name: "",
+        description: "",
+        date: 0,
+        daysLeft: 0,
+        icon: ''
     }
-]);
-
-// 热力图数据
-const heatmapData = ref([]);
-const generateHeatmapData = () => {
-    const data = [];
-    const startDate = new Date(currentYear - 1, 0, 1);
-
-    for (let i = 0; i < 365; i++) {
-        const date = new Date(startDate);
-        date.setDate(date.getDate() + i);
-        const value = Math.floor(Math.random() * 5);
-        if (value > 0) {
-            data.push([
-                date.getFullYear() + '-' +
-                String(date.getMonth() + 1).padStart(2, '0') + '-' +
-                String(date.getDate()).padStart(2, '0'),
-                value
-            ]);
-        }
-    }
-    heatmapData.value = data;
-};
-
+);
+const getAnn = async () => {
+    const categoryToIcon = {
+        "生日": Cake,
+        "节日": Calendar1,
+        "考试": PencilRuler,
+    };
+    let params = { "user_id": Cookie.get('user_id') }
+    let res = await getMemDay(params)
+    anniversaryData.value = res.data.map(item => ({
+        name: item.event_name,
+        description: item.description,
+        date: formatDate(item.event_date),
+        daysLeft: getTimeDiff(item.event_date),
+        icon: categoryToIcon[item.category] || Calendar1,
+    }));
+}
 const signatureText = ref(null);
 const heatmapChart = ref(null);
 let chart = null;
-let timer = null;
 
-// 打字机效果
+// Typewriter effect
 const typewriterEffect = () => {
-    const text = userData.value.signature;
-    let i = 0;
+  if (!signatureText.value) {
+    console.error("signatureText is not yet bound to DOM element.");
+    return;
+  }
+  const text = userData.value.signature || "";
+  let i = 0;
 
-    const typing = () => {
-        if (i < text.length) {
-            signatureText.value.textContent += text.charAt(i);
-            i++;
-            setTimeout(typing, 100);
-        } else {
-            setTimeout(() => {
-                signatureText.value.textContent = '';
-                i = 0;
-                typing();
-            }, 3000);
-        }
-    };
-    typing();
+  const typing = () => {
+    if (i < text.length) {
+      signatureText.value.textContent = text.slice(0, i + 1);
+      i++;
+      setTimeout(typing, 100);
+    } else {
+      setTimeout(() => {
+        signatureText.value.textContent = '';
+        i = 0;
+        typing();
+      }, 3000);
+    }
+  };
+  typing();
 };
-
+onMounted(async () => {
+    await getUesrData();
+    await getAnn();
+    await nextTick();
+    initHeatmap();
+    typewriterEffect(); // 调用时确保 DOM 已渲染
+});
+onUnmounted(() => {
+    if (chart) chart.dispose();
+});
 // 初始化热力图
 const initHeatmap = () => {
     if (chart) {
@@ -236,7 +268,7 @@ const initHeatmap = () => {
         tooltip: {
             position: 'top',
             formatter: function (params) {
-                return params.data[0] + ': ' + params.data[1] + ' 次贡献';
+                return params.data[0] + ': ' + params.data[1] + ' 积分';
             }
         },
         visualMap: {
@@ -246,7 +278,7 @@ const initHeatmap = () => {
             calculable: true,
             orient: 'horizontal',
             left: 'center',
-            bottom: '0%', 
+            bottom: '0%',
             color: ['#136329', '#2CA44F', '#4BC16B', '#ACEEBB']
         },
         calendar: {
@@ -254,7 +286,7 @@ const initHeatmap = () => {
             left: 30,
             right: 30,
             cellSize: ['auto', 15],
-            range: String(currentYear - 1),
+            range: String(currentYear),
             itemStyle: {
                 borderWidth: 0.5
             },
@@ -267,40 +299,7 @@ const initHeatmap = () => {
         }
     };
     chart.setOption(option);
-};
-
-
-// 更新时间
-const updateTime = () => {
-    // 计算属性会自动更新，无需额外操作
-};
-
-onMounted(() => {
-    generateHeatmapData();
-    typewriterEffect();
-    initHeatmap();
-
-    window.addEventListener('resize', () => {
-        if (chart) {
-            chart.resize();
-        }
-    });
-    timer = setInterval(updateTime, 1000);
-});
-
-onUnmounted(() => {
-    if (timer) {
-        clearInterval(timer);
-    }
-    if (chart) {
-        chart.dispose();
-    }
-    window.removeEventListener('resize', () => {
-        if (chart) {
-            chart.resize();
-        }
-    });
-});
+}; 
 </script>
 
 <style scoped>
@@ -398,27 +397,32 @@ onUnmounted(() => {
 h2 {
     text-align: center !important;
     margin: 0 !important;
+    font-size: 2rem;
+    font-weight: bold;
 }
 
 .days-container {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
 }
 
 .days-number {
-    font-size: 2.7rem;
+    font-size: 6rem;
     font-weight: bold;
     line-height: 1;
     margin-right: 0.5rem;
 }
 
 .days-text {
-    font-size: 1.2rem;
+    font-size: 2rem;
     align-self: flex-end;
+    margin-bottom: 1.5rem;
 }
 
 .progress-circle {
-    margin-left: auto;
+    margin-left: 70px;
     width: 150px;
     height: 150px;
     border-radius: 50%;
@@ -440,14 +444,15 @@ h2 {
 .percentage {
     position: relative;
     z-index: 1;
-    font-size: 1rem;
+    font-size: 1.2rem;
     font-weight: bold;
 }
 
 .time-detail {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     color: #666;
-    margin-top: 0.5rem;
+    margin-top: 1rem;
+    text-align: center;
 }
 
 .anniversary-section {
@@ -472,6 +477,7 @@ h2 {
     padding: 1rem;
     border-radius: 8px;
     background-color: #f9f9f9;
+    margin-bottom: 0.5rem;
 }
 
 .anniversary-info {
@@ -487,6 +493,13 @@ h2 {
 .anniversary-date {
     font-size: 0.9rem;
     color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.anniversary-description {
+    font-size: 0.9rem;
+    color: #888;
+    font-style: italic;
 }
 
 .anniversary-days {

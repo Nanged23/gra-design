@@ -1,226 +1,3 @@
-<!-- TODO 完成数据装填 -->
-<template>
-    <div class="blog-statistics">
-        <h1 class="title">共创作 {{ totalWords }} 字，相当于 {{ bookCount }} 本《{{ bookName }}》</h1>
-
-        <div class="charts-container">
-            <div class="chart-wrapper">
-                <div ref="timeChart" class="chart"></div>
-            </div>
-            <div class="chart-wrapper">
-                <div ref="wordCloudChart" class="chart"></div>
-            </div>
-        </div>
-        <h2 class="ranking-title">热门文章排行</h2>
-        <div class="ranking-list">
-            <div v-for="(article, index) in topArticles" 
-                 :key="article.id" 
-                 class="article-card" 
-                 :class="`rank-${index + 1}`"
-                 @click="navigateToArticle(article.id)"
-                 :style="{ '--delay': `${index * 0.1}s` }">
-                <div class="medal-container" v-if="index < 3">
-                    <div class="medal-ribbon"></div>
-                    <div class="medal-icon" :class="`medal-${index + 1}`">
-                        {{ index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉' }}
-                    </div>
-                    <div class="medal-rank">{{ index + 1 }}</div>
-                </div>
-                <div class="article-cover">
-                    <img :src="article.coverUrl" :alt="article.title">
-                    <div class="article-overlay">
-                        <span class="read-more">阅读全文</span>
-                    </div>
-                </div>
-                <div class="article-info">
-                    <h3 class="article-title">{{ article.title }}</h3>
-                    <div class="article-views">
-                        <span class="views-icon"> <Eye /></span>
-                       
-                        <span class="views-count">{{ article.views }}</span>
-                    </div>
-                </div>
-                <div class="shine-effect"></div>
-            </div>
-        </div>
-    </div>
-</template>
-
-<script setup>
-import { ref, onMounted } from 'vue';
-import { Eye } from 'lucide-vue-next';
-import * as echarts from 'echarts';
-import 'echarts-wordcloud'; 
-const totalWords = ref(125000);
-const bookName = ref('平凡的世界');
-const bookCount = ref((totalWords.value / 350000).toFixed(1)); 
-
-const timeChart = ref(null);
-const wordCloudChart = ref(null);
-
-// Mock data for time preference
-const timePreferenceData = [
-    { value: 35, name: '晚上 (20:00-23:00)' },
-    { value: 30, name: '下午 (14:00-17:00)' },
-    { value: 20, name: '早晨 (6:00-9:00)' },
-    { value: 10, name: '深夜 (23:00-2:00)' },
-    { value: 5, name: '其他时间' }
-];
-
-// Mock data for tags
-const tagData = [
-    { name: '技术', value: 100 },
-    { name: 'JavaScript', value: 85 },
-    { name: 'Vue', value: 80 },
-    { name: 'React', value: 75 },
-    { name: '前端', value: 70 },
-    { name: 'CSS', value: 65 },
-    { name: '后端', value: 60 },
-    { name: 'Node.js', value: 55 },
-    { name: '数据库', value: 50 },
-    { name: '算法', value: 45 },
-    { name: '设计模式', value: 40 },
-    { name: '性能优化', value: 35 },
-    { name: '工程化', value: 30 },
-    { name: '微服务', value: 25 },
-    { name: '云计算', value: 20 },
-];
-
-// Mock data for top articles
-const topArticles = ref([
-    {
-        id: 1,
-        title: '深入理解 Vue3 Composition API',
-        coverUrl: 'https://picsum.photos/id/1/200/120',
-        views: 3542
-    },
-    {
-        id: 2,
-        title: 'JavaScript 异步编程最佳实践',
-        coverUrl: 'https://picsum.photos/id/2/200/120',
-        views: 2871
-    },
-    {
-        id: 3,
-        title: '从零搭建高性能前端架构',
-        coverUrl: 'https://picsum.photos/id/3/200/120',
-        views: 2103
-    }
-]);
-// Function to navigate to article detail
-const navigateToArticle = (articleId) => {
-    console.log(`Navigating to article ${articleId}`); 
-};
-
-onMounted(() => {
-    // Initialize time preference pie chart
-    const timeChartInstance = echarts.init(timeChart.value);
-    timeChartInstance.setOption({
-        title: {
-            text: '创作偏好时间',
-            left: 'center',
-            textStyle: {
-                fontSize: 16,
-                color: '#333'
-            }
-        },
-        tooltip: {
-            trigger: 'item',
-            formatter: '{a} <br/>{b}: {c} ({d}%)'
-        },
-        legend: {
-            orient: 'vertical',
-            left: 'left',
-            top: 'middle'
-        },
-        series: [
-            {
-                name: '创作时间',
-                type: 'pie',
-                radius: ['40%', '70%'],
-                avoidLabelOverlap: false,
-                itemStyle: {
-                    borderRadius: 10,
-                    borderColor: '#fff',
-                    borderWidth: 2
-                },
-                label: {
-                    show: false,
-                    position: 'center'
-                },
-                emphasis: {
-                    label: {
-                        show: true,
-                        fontSize: 14,
-                        fontWeight: 'bold'
-                    }
-                },
-                labelLine: {
-                    show: false
-                },
-                data: timePreferenceData,
-                color: ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316']
-            }
-        ]
-    });
-
-    // Initialize word cloud chart
-    const wordCloudChartInstance = echarts.init(wordCloudChart.value);
-    wordCloudChartInstance.setOption({
-        title: {
-            text: '文章标签词云',
-            left: 'center',
-            textStyle: {
-                fontSize: 16,
-                color: '#333'
-            }
-        },
-        tooltip: {
-            show: true
-        },
-        series: [{
-            type: 'wordCloud',
-            shape: 'circle',
-            left: 'center',
-            top: 'center',
-            width: '90%',
-            height: '90%',
-            right: null,
-            bottom: null,
-            sizeRange: [12, 30],
-            rotationRange: [-90, 90],
-            rotationStep: 45,
-            gridSize: 8,
-            drawOutOfBound: false,
-            textStyle: {
-                fontFamily: 'sans-serif',
-                fontWeight: 'bold',
-                color: function () {
-                    return 'rgb(' + [
-                        Math.round(Math.random() * 160),
-                        Math.round(Math.random() * 160),
-                        Math.round(Math.random() * 160)
-                    ].join(',') + ')';
-                }
-            },
-            emphasis: {
-                textStyle: {
-                    shadowBlur: 10,
-                    shadowColor: '#333'
-                }
-            },
-            data: tagData
-        }]
-    });
-
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        timeChartInstance.resize();
-        wordCloudChartInstance.resize();
-    });
-});
-</script>
-
 <style scoped>
 .blog-statistics {
     margin-left: 220px;
@@ -255,8 +32,6 @@ onMounted(() => {
     height: 300px;
 }
 
-
-
 .chart {
     width: 550px;
     height: 100%;
@@ -285,8 +60,13 @@ onMounted(() => {
 }
 
 @keyframes slideRight {
-    from { width: 0; }
-    to { width: 100%; }
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
 }
 
 .ranking-list {
@@ -299,7 +79,7 @@ onMounted(() => {
 }
 
 .article-card {
-    display: flex; 
+    display: flex;
     background-image: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
     border-radius: 12px;
     overflow: hidden;
@@ -346,12 +126,10 @@ onMounted(() => {
     left: -100%;
     width: 50%;
     height: 100%;
-    background: linear-gradient(
-        to right,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.3) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0) 100%);
     transform: skewX(20deg);
     transition: transform 1s;
     pointer-events: none;
@@ -372,7 +150,8 @@ onMounted(() => {
 }
 
 .rank-3 {
-    border: 2px solid #f8e9db; /* bronze */
+    border: 2px solid #f8e9db;
+    /* bronze */
     box-shadow: 0 4px 12px rgba(205, 127, 50, 0.2);
     z-index: 1;
 }
@@ -468,7 +247,7 @@ onMounted(() => {
 }
 
 .views-icon {
-    margin-top:0.4rem;
+    margin-top: 0.4rem;
     margin-right: 0.5rem;
 }
 
@@ -489,9 +268,17 @@ onMounted(() => {
 }
 
 @keyframes swingMedal {
-    0% { transform: rotate(-10deg); }
-    50% { transform: rotate(10deg); }
-    100% { transform: rotate(0); }
+    0% {
+        transform: rotate(-10deg);
+    }
+
+    50% {
+        transform: rotate(10deg);
+    }
+
+    100% {
+        transform: rotate(0);
+    }
 }
 
 .medal-ribbon {
@@ -512,9 +299,17 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .medal-1 {
@@ -523,9 +318,17 @@ onMounted(() => {
 }
 
 @keyframes shine {
-    0% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7)); }
-    50% { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.7)); }
-    100% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7)); }
+    0% {
+        filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.7));
+    }
+
+    100% {
+        filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
+    }
 }
 
 .medal-2 {
@@ -567,10 +370,309 @@ onMounted(() => {
         width: 100%;
         height: 160px;
     }
-    
+
     .medal-container {
         top: 10px;
         left: 10px;
     }
 }
 </style>
+<template>
+    <div class="blog-statistics">
+        <h1 class="title">共创作 {{ totalWords }} 字，相当于 {{sentence}}</h1>
+
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <div ref="timeChart" class="chart"></div>
+            </div>
+            <div class="chart-wrapper">
+                <div ref="wordCloudChart" class="chart"></div>
+            </div>
+        </div>
+        <h2 class="ranking-title">热门文章排行</h2>
+        <div class="ranking-list">
+            <div v-for="(article, index) in topArticles" :key="article.id" class="article-card"
+                :class="`rank-${index + 1}`" @click="fetchAndGo(article)" :style="{ '--delay': `${index * 0.1}s` }">
+                <div class="medal-container" v-if="index < 3">
+                    <div class="medal-ribbon"></div>
+                    <div class="medal-icon" :class="`medal-${index + 1}`">
+                        {{ index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉' }}
+                    </div>
+                    <div class="medal-rank">{{ index + 1 }}</div>
+                </div>
+                <div class="article-cover">
+                    <img :src="article.cover" :alt="article.title">
+                    <div class="article-overlay">
+                        <span class="read-more">阅读全文</span>
+                    </div>
+                </div>
+                <div class="article-info">
+                    <h3 class="article-title">{{ article.title }}</h3>
+                    <div class="article-views">
+                        <span class="views-icon">
+                            <Eye />
+                        </span>
+                        <span class="views-count">{{ article.views_count }}</span>
+                    </div>
+                </div>
+                <div class="shine-effect"></div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { Eye } from 'lucide-vue-next';
+import * as echarts from 'echarts';
+import 'echarts-wordcloud';
+import Cookies from 'js-cookie';
+import { ElMessage } from 'element-plus';
+import { getTimePrefer, getTopArticles, getWordCloud, getWordCount } from '@/js/analyse/article-analyse';
+import { useArticleStore } from '../../stores/article';
+import { getSingleArticle } from '../../js/cur/article.js';
+const emits = defineEmits(['scrollToTop']);
+const articleStore = useArticleStore();
+const totalWords = ref(0);
+const sentence = ref(''); 
+const timeChart = ref(null);
+const wordCloudChart = ref(null);
+const topArticles = ref([]);
+const router = useRouter();
+// 获取标签词云数据
+const fetchTagCloudData = async () => {
+    try {
+        let params = { "user_id": Cookies.get("user_id") }
+        const result = await getWordCloud(params);
+
+        if (result.msg === 'success') {
+            const tagData = Object.entries(result.data).map(([name, value]) => ({
+                name,
+                value
+            }));
+
+            return tagData;
+        }
+        return [];
+    } catch (error) {
+        ElMessage({
+            type: 'error',
+            message: '获取标签词云数据失败'
+        })
+        return [];
+    }
+};
+
+// 获取字数统计数据
+const fetchWordCountData = async () => {
+    try {
+        let params = { "user_id": Cookies.get("user_id") }
+        const result = await getWordCount(params)
+        if (result.msg === 'success') {
+            totalWords.value = result.data.word_count;
+            sentence.value = result.data.sentence;
+            return result.data;
+        }
+        return null;
+    } catch (error) {
+        ElMessage({
+            type: 'error',
+            message: '获取字数统计数据失败'
+        })
+        return null;
+    }
+};
+
+// 获取文章排行数据
+const fetchTopArticlesData = async () => {
+    try {
+        let params = { "user_id": Cookies.get("user_id") }
+        const result = await getTopArticles(params);
+
+        if (result.msg === 'success') {
+            topArticles.value = result.data;
+            return result.data;
+        }
+        return [];
+    } catch (error) {
+        ElMessage({
+            type: 'error',
+            message: '获取文章排行数据失败'
+        })
+        return [];
+    }
+};
+
+// 获取时间偏好数据
+const fetchTimePreferenceData = async () => {
+    try {
+        let params = { "user_id": Cookies.get("user_id") }
+        const result = await getTimePrefer(params);
+
+        if (result.msg === 'success') {
+            const timeData = Object.entries(result.data).map(([name, value]) => ({
+                name: name,
+                value: value
+            }));
+
+            return timeData;
+        }
+        return [];
+    } catch (error) {
+        ElMessage({
+            type: 'error',
+            message: '获取时间偏好数据失败'
+        })
+        return [];
+    }
+};
+
+// 初始化标签词云图表
+const initWordCloudChart = async () => {
+    const tagData = await fetchTagCloudData();
+
+    if (!wordCloudChart.value) return;
+
+    const wordCloudChartInstance = echarts.init(wordCloudChart.value);
+    const title = '文章标签词云';
+    const fontSize = 16;
+    wordCloudChartInstance.setOption({
+        title: {
+            text: title,
+            left: 'center',
+            textStyle: {
+                fontSize: fontSize,
+                color: '#333'
+            }
+        },
+        tooltip: {
+            show: true
+        },
+        series: [{
+            type: 'wordCloud',
+            shape: 'circle',
+            left: 'center',
+            top: 'center',
+            width: '90%',
+            height: '90%',
+            right: null,
+            bottom: null,
+            sizeRange: [12, 30],
+            rotationRange: [-90, 90],
+            rotationStep: 45,
+            gridSize: 8,
+            drawOutOfBound: false,
+            textStyle: {
+                fontFamily: 'sans-serif',
+                fontWeight: 'bold',
+                color: function () {
+                    return 'rgb(' + [
+                        Math.round(Math.random() * 160),
+                        Math.round(Math.random() * 160),
+                        Math.round(Math.random() * 160)
+                    ].join(',') + ')';
+                }
+            },
+            emphasis: {
+                textStyle: {
+                    shadowBlur: 10,
+                    shadowColor: '#333'
+                }
+            },
+            data: tagData
+        }]
+    });
+
+    // 处理窗口大小变化
+    window.addEventListener('resize', () => {
+        wordCloudChartInstance.resize();
+    });
+};
+
+// 初始化时间偏好图表
+const initTimePreferenceChart = async () => {
+    const timeData = await fetchTimePreferenceData();
+
+    if (!timeChart.value) return;
+
+    const timeChartInstance = echarts.init(timeChart.value);
+    const title = '创作偏好时间';
+    const text = '创作时间';
+    
+    timeChartInstance.setOption({
+        title: {
+            text: title,
+            left: 'center',
+            textStyle: {
+                fontSize: 16,
+                color: '#333'
+            }
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b}: {c} ({d}%)'
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            top: 'middle'
+        },
+        series: [
+            {
+                name: text,
+                type: 'pie',
+                radius: ['40%', '70%'],
+                avoidLabelOverlap: false,
+                itemStyle: {
+                    borderRadius: 10,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                },
+                label: {
+                    show: false,
+                    position: 'center'
+                },
+                emphasis: {
+                    label: {
+                        show: true,
+                        fontSize: 14,
+                        fontWeight: 'bold'
+                    }
+                },
+                labelLine: {
+                    show: false
+                },
+                data: timeData,
+                color: ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316']
+            }
+        ]
+    });
+
+    // 处理窗口大小变化
+    window.addEventListener('resize', () => {
+        timeChartInstance.resize();
+    });
+};
+
+// 导航到文章详情页 
+const fetchAndGo = async (post) => {
+    const requestParams = { user_id: Cookies.get("user_id"), type: 1, extra: post.id };
+    const res = await getSingleArticle(requestParams);
+
+    articleStore.setCurrentArticle(res.data);
+    router.push(`/articleDetail/${post.slug}`);
+    emits('scrollToTop');
+};
+// 初始化所有数据
+const initData = async () => {
+    await fetchWordCountData();
+    await fetchTopArticlesData();
+    await initWordCloudChart();
+    await initTimePreferenceChart();
+};
+
+onMounted(() => {
+    initData();
+});
+</script>

@@ -1,4 +1,3 @@
-<!-- TODO 完成数据装填 -->
 <template>
     <div class="douban-summary">
         <div class="background-decoration">
@@ -193,7 +192,8 @@ import * as d3 from 'd3';
 import cloud from 'd3-cloud';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
+import { getDouBan } from '@/js/analyse/douban-analyse';
+import Cookies from 'js-cookie';
 // 注册 GSAP 插件
 gsap.registerPlugin(ScrollTrigger);
 
@@ -232,34 +232,33 @@ const chartInstances = ref({});
 const timelineView = ref('month');
 const activeCollection = ref('books');
 const activeTagsView = ref('watched');
-
-// 模拟 API 响应数据
-const response = {
-    "data": {
+ 
+const data = ref({
+ 
         "monthly_stats": {
             "2023-03": { "book_count": 0, "movie_count": 1 },
-            "2023-04": { "book_count": 3, "movie_count": 0 },
-            "2023-05": { "book_count": 1, "movie_count": 9 },
-            "2023-06": { "book_count": 1, "movie_count": 0 },
-            "2023-07": { "book_count": 1, "movie_count": 3 },
-            "2023-08": { "book_count": 1, "movie_count": 2 },
-            "2023-09": { "book_count": 3, "movie_count": 3 },
+            "2023-04": { "book_count": 0, "movie_count": 0 },
+            "2023-05": { "book_count": 0, "movie_count": 9 },
+            "2023-06": { "book_count": 0, "movie_count": 0 },
+            "2023-07": { "book_count": 0, "movie_count": 3 },
+            "2023-08": { "book_count": 0, "movie_count": 2 },
+            "2023-09": { "book_count": 0, "movie_count": 3 },
             "2023-10": { "book_count": 0, "movie_count": 4 },
-            "2023-11": { "book_count": 1, "movie_count": 2 },
-            "2023-12": { "book_count": 7, "movie_count": 1 },
+            "2023-11": { "book_count": 0, "movie_count": 2 },
+            "2023-12": { "book_count": 0, "movie_count": 1 },
             "2024-01": { "book_count": 0, "movie_count": 4 },
-            "2024-02": { "book_count": 2, "movie_count": 5 },
-            "2024-03": { "book_count": 4, "movie_count": 4 },
-            "2024-04": { "book_count": 2, "movie_count": 0 },
-            "2024-05": { "book_count": 1, "movie_count": 4 },
-            "2024-06": { "book_count": 1, "movie_count": 2 },
-            "2024-07": { "book_count": 2, "movie_count": 2 },
-            "2024-08": { "book_count": 1, "movie_count": 1 },
+            "2024-02": { "book_count": 0, "movie_count": 5 },
+            "2024-03": { "book_count": 0, "movie_count": 4 },
+            "2024-04": { "book_count": 0, "movie_count": 0 },
+            "2024-05": { "book_count": 0, "movie_count": 4 },
+            "2024-06": { "book_count": 0, "movie_count": 2 },
+            "2024-07": { "book_count": 0, "movie_count": 2 },
+            "2024-08": { "book_count": 0, "movie_count": 1 },
             "2024-09": { "book_count": 0, "movie_count": 2 },
-            "2024-10": { "book_count": 4, "movie_count": 1 },
+            "2024-10": { "book_count": 0, "movie_count": 1 },
             "2024-11": { "book_count": 0, "movie_count": 2 },
-            "2024-12": { "book_count": 2, "movie_count": 1 },
-            "2025-01": { "book_count": 1, "movie_count": 0 },
+            "2024-12": { "book_count": 0, "movie_count": 1 },
+            "2025-01": { "book_count": 0, "movie_count": 0 },
             "2025-02": { "book_count": 0, "movie_count": 2 },
             "2025-03": { "book_count": 0, "movie_count": 1 }
         },
@@ -317,19 +316,29 @@ const response = {
         "total_watched_movies": 45,
         "total_wish_books": 22,
         "total_wish_movies": 44
-    },
-    "msg": "success"
-};
-
-// 提取数据
-const data = reactive(response.data);
+    
+});
+ 
+const fetchData = async () => {
+    let params = {
+        "user_id": Cookies.get("user_id"),
+    }
+    let res = await getDouBan(params)
+    data.value=res.data;  
+}
+fetchData().then(() => {
+    nextTick(() => {
+        renderTimelineChart();
+        renderBubbleChart();
+    });
+});
 
 // 统计数据
 const stats = [
-    { label: '读过的书', value: data.total_read_books, icon: 'book-icon' },
-    { label: '看过的电影', value: data.total_watched_movies, icon: 'movie-icon' },
-    { label: '想读的书', value: data.total_wish_books, icon: 'wish-book-icon' },
-    { label: '想看的电影', value: data.total_wish_movies, icon: 'wish-movie-icon' }
+    { label: '读过的书', value: data.value.total_read_books, icon: 'book-icon' },
+    { label: '看过的电影', value: data.value.total_watched_movies, icon: 'movie-icon' },
+    { label: '想读的书', value: data.value.total_wish_books, icon: 'wish-book-icon' },
+    { label: '想看的电影', value: data.value.total_wish_movies, icon: 'wish-movie-icon' }
 ];
 
 // 日期格式化函数
@@ -343,7 +352,7 @@ const getPeakReadingMonth = () => {
     let peakMonth = '';
     let peakCount = 0;
 
-    Object.entries(data.monthly_stats).forEach(([month, stats]) => {
+    Object.entries(data.value.monthly_stats).forEach(([month, stats]) => {
         if (stats.book_count > peakCount) {
             peakCount = stats.book_count;
             peakMonth = month;
@@ -358,7 +367,7 @@ const getPeakReadingMonth = () => {
 
 // 获取阅读高峰数量
 const getPeakReadingCount = () => {
-    return Math.max(...Object.values(data.monthly_stats).map(stats => stats.book_count));
+    return Math.max(...Object.values(data.value.monthly_stats).map(stats => stats.book_count));
 };
 
 // 切换时间线视图
@@ -390,9 +399,9 @@ const renderTimelineChart = () => {
     if (!chartInstance) return;
 
     // 处理数据
-    const months = Object.keys(data.monthly_stats).sort();
-    const bookData = months.map(month => data.monthly_stats[month].book_count);
-    const movieData = months.map(month => data.monthly_stats[month].movie_count);
+    const months = Object.keys(data.value.monthly_stats).sort();
+    const bookData = months.map(month => data.value.monthly_stats[month].book_count);
+    const movieData = months.map(month => data.value.monthly_stats[month].movie_count);
 
     // 如果是年度视图，合并月度数据
     let xAxisData, bookSeriesData, movieSeriesData;
@@ -657,8 +666,8 @@ const renderReadingHabitsChart = () => {
     if (!chartInstance) return;
 
     // 处理数据
-    const months = Object.keys(data.monthly_stats).sort();
-    const bookData = months.map(month => data.monthly_stats[month].book_count);
+    const months = Object.keys(data.value.monthly_stats).sort();
+    const bookData = months.map(month => data.value.monthly_stats[month].book_count);
 
     // 设置图表选项
     chartInstance.setOption({
@@ -719,9 +728,9 @@ const renderAfterEnter = () => {
     const watchedTagColors = d3.scaleOrdinal().range(['#264653', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51']);
     const wishTagColors = d3.scaleOrdinal().range(['#e76f51', '#f4a261', '#e9c46a', '#2a9d8f', '#264653']);
     if (activeTagsView.value === 'watched' && watchedTagsCloud.value) {
-        renderTagCloud(watchedTagsCloud.value, data.top3_watched_movie_tags, watchedTagColors);
+        renderTagCloud(watchedTagsCloud.value, data.value.top3_watched_movie_tags, watchedTagColors);
     } else if (activeTagsView.value === 'wish' && wishTagsCloud.value) {
-        renderTagCloud(wishTagsCloud.value, data.top3_wish_movie_tags, wishTagColors);
+        renderTagCloud(wishTagsCloud.value, data.value.top3_wish_movie_tags, wishTagColors);
     } else {
         console.warn('Tag cloud ref is null after enter');
     }
@@ -736,7 +745,7 @@ watch(activeCollection, (newValue) => {
 
         if (newValue === 'books') {
             if (authorsBubbles.value) {
-                renderBubbleChart(authorsBubbles.value, data.top3_book_authors, authorColors);
+                renderBubbleChart(authorsBubbles.value, data.value.top3_book_authors, authorColors);
             }
 
             if (publishersBars.value) {
@@ -752,7 +761,7 @@ watch(activeCollection, (newValue) => {
             }
         } else if (newValue === 'movies') {
             if (directorsBubbles.value) {
-                renderBubbleChart(directorsBubbles.value, data.top3_movie_directors, directorColors);
+                renderBubbleChart(directorsBubbles.value, data.value.top3_movie_directors, directorColors);
             }
 
             if (countriesBars.value) {
@@ -791,7 +800,7 @@ onMounted(() => {
 
     // 初始化卡片动画
     gsap.from(statCards.value, {
-    
+
         opacity: 0,
         duration: 0.8,
         stagger: 0.2,
@@ -854,7 +863,7 @@ onMounted(() => {
             trigger: authorsBubbles.value,
             start: "top 80%",
             onEnter: () => {
-                renderBubbleChart(authorsBubbles.value, data.top3_book_authors, authorColors);
+                renderBubbleChart(authorsBubbles.value, data.value.top3_book_authors, authorColors);
             }
         });
     }
@@ -865,7 +874,7 @@ onMounted(() => {
             trigger: directorsBubbles.value,
             start: "top 80%",
             onEnter: () => {
-                renderBubbleChart(directorsBubbles.value, data.top3_movie_directors, directorColors);
+                renderBubbleChart(directorsBubbles.value, data.value.top3_movie_directors, directorColors);
             }
         });
     }
@@ -924,9 +933,9 @@ onMounted(() => {
                 const watchedTagColors = d3.scaleOrdinal().range(['#264653', '#2a9d8f', '#e9c46a', '#f4a261', '#e76f51']);
                 const wishTagColors = d3.scaleOrdinal().range(['#e76f51', '#f4a261', '#e9c46a', '#2a9d8f', '#264653']);
                 if (activeTagsView.value === 'watched' && watchedTagsCloud.value) {
-                    renderTagCloud(watchedTagsCloud.value, data.top3_watched_movie_tags, watchedTagColors);
+                    renderTagCloud(watchedTagsCloud.value, data.value.top3_watched_movie_tags, watchedTagColors);
                 } else if (activeTagsView.value === 'wish' && wishTagsCloud.value) {
-                    renderTagCloud(wishTagsCloud.value, data.top3_wish_movie_tags, wishTagColors);
+                    renderTagCloud(wishTagsCloud.value, data.value.top3_wish_movie_tags, wishTagColors);
                 }
             },
         });
@@ -952,12 +961,7 @@ onMounted(() => {
 
 });
 onBeforeUnmount(() => {
-
-    Object.values(chartInstances.value).forEach(chart => {
-        if (chart) {
-            chart.dispose();
-        }
-    });
+    Object.values(chartInstances.value).forEach(chart => chart.dispose());
     ScrollTrigger.getAll().forEach(trigger => {
         trigger.kill();
     });
@@ -1069,26 +1073,26 @@ header {
 .summary-stats {
     display: flex;
     justify-content: center;
-    height:auto;
+    height: auto;
     gap: 2rem;
- 
+
 }
 
 .stat-card {
-    margin-top:20px;
+    margin-top: 20px;
     position: relative;
     width: 180px;
     height: 180px;
     display: flex;
     flex-direction: column;
-    align-items: center; 
+    align-items: center;
     justify-content: space-between;
     background-image: linear-gradient(to top, #f5ecee 0%, #e9f0fa 99%, #e2ebfa 100%);
     border-radius: 12px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
     padding: 1.5rem;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-     
+
 }
 
 .stat-card:hover {
@@ -1144,7 +1148,7 @@ header {
 }
 
 .timeline-container {
-    background:transparent;
+    background: transparent;
     border-radius: 12px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
     padding: 2rem;
@@ -1187,7 +1191,7 @@ header {
 }
 
 .collections-container {
-    background:transparent;
+    background: transparent;
     border-radius: 12px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
     padding: 2rem;
@@ -1360,7 +1364,7 @@ header {
 .authors-visualization,
 .directors-visualization {
     grid-column: span 2;
-    background:transparent;
+    background: transparent;
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -1376,7 +1380,7 @@ header {
 .publishers-visualization,
 .countries-visualization {
     grid-column: span 2;
-    background:transparent;
+    background: transparent;
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -1444,9 +1448,9 @@ header {
 }
 
 .tags-container {
-    background:transparent;
+    background: transparent;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-    border-radius: 12px; 
+    border-radius: 12px;
     padding: 2rem;
 }
 
@@ -1493,7 +1497,7 @@ header {
 }
 
 .reading-chart {
-    background:transparent;
+    background: transparent;
     border-radius: 12px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
     padding: 2rem;

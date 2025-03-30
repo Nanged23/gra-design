@@ -1,4 +1,3 @@
-<!-- TODO 完成数据装填 -->
 <style>
 .raining-container {
   position: relative;
@@ -37,7 +36,6 @@
 }
 
 .menu {
-
   display: flex;
   justify-content: center;
   gap: 20px;
@@ -237,33 +235,15 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import * as echarts from 'echarts';
-
-// View state
+import { getMomentByYear, getMomentByMonth } from '@/js/analyse/moment-analyse';
+import Cookies from 'js-cookie';
+import { ElMessage } from 'element-plus';
 const activeView = ref('monthly');
+const heatmapData = ref([]);
 const setActiveView = (view) => {
   activeView.value = view;
 };
-const initCharts = async () => {
-  await nextTick(); // Wait for DOM update
 
-  // Add a small delay to ensure DOM is fully rendered
-  setTimeout(() => {
-    if (activeView.value === 'monthly') {
-      initMonthlyBarChart();
-      initMonthlyPieChart();
-    } else {
-      initYearlyBarChart();
-      initYearlyPieChart();
-      initHeatmapChart();
-    }
-  }, 100);
-};
-
-// Watch for view changes
-watch(activeView, async () => {
-  await nextTick(); // Wait for DOM update
-  initCharts();
-});
 // Chart references
 const monthlyBarChart = ref(null);
 const monthlyPieChart = ref(null);
@@ -278,69 +258,64 @@ let yearlyBarChartInstance = null;
 let yearlyPieChartInstance = null;
 let heatmapChartInstance = null;
 
-// Mock data for charts
-const monthlyData = {
-  categories: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-  values: [320, 302, 301, 334, 390, 330, 320]
-};
+// Data refs to store API responses
+const monthlyData = ref(null);
+const yearlyData = ref(null);
 
-const monthlyPieData = [
-  { value: 335, name: '直接访问' },
-  { value: 310, name: '邮件营销' },
-  { value: 274, name: '联盟广告' },
-  { value: 235, name: '视频广告' },
-  { value: 400, name: '搜索引擎' }
-];
-
-const yearlyData = {
-  categories: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-  values: [320, 332, 301, 334, 390, 330, 320, 342, 301, 334, 390, 330]
-};
-
-const yearlyPieData = [
-  { value: 1048, name: '搜索引擎' },
-  { value: 735, name: '直接访问' },
-  { value: 580, name: '邮件营销' },
-  { value: 484, name: '联盟广告' },
-  { value: 300, name: '视频广告' }
-];
-
-// Generate heatmap data for 365 days
-const generateHeatmapData = () => {
-  const data = [];
-  const startDate = new Date(2023, 0, 1);
-  const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-  const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
-
-  for (let i = 0; i < 365; i++) {
-    const date = new Date(startDate);
-    date.setDate(startDate.getDate() + i);
-
-    // Random value between 0-4 with higher probability for lower values
-    const value = Math.floor(Math.random() * 5 * Math.random());
-
-    data.push([
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      value
-    ]);
+// API calls (to be implemented by you)
+const fetchMonthlyData = async () => {
+  try {
+    let params = {
+      "user_id": Cookies.get("user_id")
+    }
+    const result = await getMomentByMonth(params);
+    if (result.msg === 'success') {
+      monthlyData.value = result.data;
+    }
+  } catch (error) {
+    ElMessage({
+      type: 'error',
+      message: '获取月度数据失败',
+    })
   }
-
-  return {
-    data,
-    dayNames,
-    monthNames
-  };
 };
 
-const heatmapData = generateHeatmapData();
-
-// Initialize charts
+const fetchYearlyData = async () => {
+  try {
+    let params = {
+      "user_id": Cookies.get("user_id")
+    }
+    const result = await getMomentByYear(params);
+    if (result.msg === 'success') {
+      yearlyData.value = result.data;
+      heatmapData.value = Object.entries(result.data.heatMap).map(([date, value]) => {
+        // 将 "20250327" 转换为 "2025-03-27"
+        const formattedDate = `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`;
+        // 将字符串值转换为数字
+        return [formattedDate, parseFloat(value)];
+    });
+    }
+  } catch (error) {
+    ElMessage({
+      type: 'error',
+      message: '获取年度数据失败',
+    })
+  }
+}; 
+const filterMoodKeys = (data) => {
+  return Object.keys(data).filter(key =>
+    !['bad_moods_count', 'good_moods_count', 'total_count'].includes(key)
+  );
+}; 
 const initMonthlyBarChart = () => {
-  if (!monthlyBarChart.value) return;
+  if (!monthlyBarChart.value || !monthlyData.value) return;
 
   monthlyBarChartInstance = echarts.init(monthlyBarChart.value);
+
+  // Dynamically get categories and values, excluding mood counts
+  const categories = filterMoodKeys(monthlyData.value);
+  const values = categories.map(key => monthlyData.value[key]);
+
   const option = {
     title: {
       text: '月度活动统计',
@@ -351,27 +326,32 @@ const initMonthlyBarChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: monthlyData.categories
+      data: categories
     },
     yAxis: {
       type: 'value'
     },
     series: [{
-      data: monthlyData.values,
+      data: values,
       type: 'bar',
       itemStyle: {
         color: '#4ade80'
       }
     }]
   };
-
   monthlyBarChartInstance.setOption(option);
 };
 
 const initMonthlyPieChart = () => {
-  if (!monthlyPieChart.value) return;
+  if (!monthlyPieChart.value || !monthlyData.value) return;
 
   monthlyPieChartInstance = echarts.init(monthlyPieChart.value);
+
+  const pieData = [
+    { value: monthlyData.value.good_moods_count, name: '好心情' },
+    { value: monthlyData.value.bad_moods_count, name: '坏心情' }
+  ];
+
   const option = {
     title: {
       text: '月度分布',
@@ -382,11 +362,11 @@ const initMonthlyPieChart = () => {
       formatter: '{a}<br/>{b}: {c} ({d}%)'
     },
     series: [{
-      name: '访问来源',
+      name: '心情分布',
       type: 'pie',
       radius: '60%',
       center: ['50%', '50%'],
-      data: monthlyPieData,
+      data: pieData,
       emphasis: {
         itemStyle: {
           shadowBlur: 10
@@ -394,20 +374,21 @@ const initMonthlyPieChart = () => {
       },
       itemStyle: {
         color: function (params) {
-          const colorList = ['#4ade80', '#22c55e', '#16a34a', '#15803d', '#166534'];
+          const colorList = ['#4ade80', '#22c55e'];
           return colorList[params.dataIndex % colorList.length];
         }
       }
     }]
   };
-
   monthlyPieChartInstance.setOption(option);
 };
 
 const initYearlyBarChart = () => {
-  if (!yearlyBarChart.value) return;
+  if (!yearlyBarChart.value || !yearlyData.value) return;
+  yearlyBarChartInstance = echarts.init(yearlyBarChart.value); 
+  const categories = filterMoodKeys(yearlyData.value.moods_sum);
+  const values = categories.map(key => yearlyData.value.moods_sum[key]);
 
-  yearlyBarChartInstance = echarts.init(yearlyBarChart.value);
   const option = {
     title: {
       text: '年度活动统计',
@@ -418,27 +399,32 @@ const initYearlyBarChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: yearlyData.categories
+      data: categories
     },
     yAxis: {
       type: 'value'
     },
     series: [{
-      data: yearlyData.values,
+      data: values,
       type: 'bar',
       itemStyle: {
         color: '#4ade80'
       }
     }]
   };
-
   yearlyBarChartInstance.setOption(option);
 };
 
 const initYearlyPieChart = () => {
-  if (!yearlyPieChart.value) return;
+  if (!yearlyPieChart.value || !yearlyData.value) return;
 
   yearlyPieChartInstance = echarts.init(yearlyPieChart.value);
+
+  const pieData = [
+    { value: yearlyData.value.moods_sum.good_moods_count, name: '好心情' },
+    { value: yearlyData.value.moods_sum.bad_moods_count, name: '坏心情' }
+  ];
+
   const option = {
     title: {
       text: '年度分布',
@@ -449,11 +435,11 @@ const initYearlyPieChart = () => {
       formatter: '{a}<br/>{b}: {c} ({d}%)'
     },
     series: [{
-      name: '访问来源',
+      name: '心情分布',
       type: 'pie',
       radius: '60%',
       center: ['50%', '50%'],
-      data: yearlyPieData,
+      data: pieData,
       emphasis: {
         itemStyle: {
           shadowBlur: 10
@@ -461,78 +447,84 @@ const initYearlyPieChart = () => {
       },
       itemStyle: {
         color: function (params) {
-          const colorList = ['#4ade80', '#22c55e', '#16a34a', '#15803d', '#166534'];
+          const colorList = ['#4ade80', '#22c55e'];
           return colorList[params.dataIndex % colorList.length];
         }
       }
     }]
   };
-
   yearlyPieChartInstance.setOption(option);
 };
-
+let chart = null;
 const initHeatmapChart = () => {
-  if (!heatmapChart.value) return;
-
-  heatmapChartInstance = echarts.init(heatmapChart.value);
-
-  const option = {
-    title: {
-      top: 0,
-      left: 'center',
-      text: '365天活动热力图'
-    },
-    tooltip: {
-      position: 'top',
-      formatter: function (params) {
-        const date = new Date(params.data[0], params.data[1], params.data[2]);
-        return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日: ${params.data[3]}`;
-      }
-    },
-    visualMap: {
-      min: 0,
-      max: 4,
-      calculable: true,
-      orient: 'horizontal',
-      left: 'center',
-      bottom: '0%',
-      text: ['多', '少'],
-      inRange: {
-        color: ['#ebedf0', '#c6e48b', '#7bc96f', '#239a3b', '#196127']
-      }
-    },
-    calendar: {
-      top: 60,
-      left: 30,
-      right: 30,
-      cellSize: ['auto', 20],
-      range: '2023',
-      itemStyle: {
-        borderWidth: 0.5
-      },
-      yearLabel: { show: false },
-      dayLabel: {
-        firstDay: 1,
-        nameMap: heatmapData.dayNames
-      },
-      monthLabel: {
-        nameMap: heatmapData.monthNames
-      }
-    },
-    series: {
-      type: 'heatmap',
-      coordinateSystem: 'calendar',
-      data: heatmapData.data
+    if (chart) {
+        chart.dispose();
     }
-  };
+    chart = echarts.init(heatmapChart.value);
 
-  heatmapChartInstance.setOption(option);
+    const option = {
+        tooltip: {
+            position: 'top',
+            formatter: function (params) {
+                return params.data[0] + ': ' + params.data[1] + ' 积分';
+            }
+        },
+        visualMap: {
+            show: false,
+            min: 0,
+            max: 4,
+            calculable: true,
+            orient: 'horizontal',
+            left: 'center',
+            bottom: '0%',
+            color: ['#136329', '#2CA44F', '#4BC16B', '#ACEEBB']
+        },
+        calendar: {
+            top: 50,
+            left: 30,
+            right: 30,
+            cellSize: ['auto', 15],
+            range: String(2025),
+            itemStyle: {
+                borderWidth: 0.5
+            },
+            yearLabel: { show: true }
+        },
+        series: {
+            type: 'heatmap',
+            coordinateSystem: 'calendar',
+            data: heatmapData.value
+        }
+    };
+    chart.setOption(option);
 }; 
+const initCharts = async () => {
+  await nextTick();
+  setTimeout(() => {
+    if (activeView.value === 'monthly') {
+      initMonthlyBarChart();
+      initMonthlyPieChart();
+    } else {
+      initYearlyBarChart();
+      initYearlyPieChart();
+      initHeatmapChart();
+    }
+  }, 100);
+};
+
+// Watch for view changes
+watch(activeView, async () => {
+  await nextTick();
+  initCharts();
+});
+
+// Rest of the code (characters, scrambler, etc.) remains unchanged
 const characters = ref([]);
 const activeIndices = ref(new Set());
 const titleElement = ref(null);
 let scrambler = null;
-let animationFrameId = null; 
+let animationFrameId = null;
+
 class TextScramble {
   constructor(el) {
     this.el = el;
@@ -611,6 +603,7 @@ const createCharacters = () => {
 
   return newCharacters;
 };
+
 const initScrambler = () => {
   if (titleElement.value && !scrambler) {
     scrambler = new TextScramble(titleElement.value);
@@ -676,17 +669,16 @@ const handleResize = () => {
   if (heatmapChartInstance) heatmapChartInstance.resize();
 };
 
-// Initialize charts based on active view
-
-
-
 onMounted(async () => {
+  // Fetch data first
+  await fetchMonthlyData();
+  await fetchYearlyData();
+
   characters.value = createCharacters();
   initScrambler();
   animationFrameId = requestAnimationFrame(updatePositions);
   flickerInterval = setInterval(updateActiveIndices, 100);
 
-  // Add a delay to ensure DOM is fully rendered
   setTimeout(() => {
     initCharts();
   }, 300);
@@ -695,18 +687,10 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
-  }
-
-  if (flickerInterval) {
-    clearInterval(flickerInterval);
-  }
-
-  // Remove resize listener
+  if (animationFrameId) cancelAnimationFrame(animationFrameId);
+  if (flickerInterval) clearInterval(flickerInterval);
   window.removeEventListener('resize', handleResize);
 
-  // Dispose chart instances
   if (monthlyBarChartInstance) monthlyBarChartInstance.dispose();
   if (monthlyPieChartInstance) monthlyPieChartInstance.dispose();
   if (yearlyBarChartInstance) yearlyBarChartInstance.dispose();

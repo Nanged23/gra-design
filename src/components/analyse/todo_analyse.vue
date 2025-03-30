@@ -1,4 +1,3 @@
-<!-- TODO 完成数据装填 -->
 <template>
     <div class="todo-summary">
         <h1 class="title">Todo 总结</h1>
@@ -26,7 +25,7 @@
                     </div>
                     <div class="metric-details">
                         <h3>总完成</h3>
-                        <div class="metric-value">{{ summaryData.finished_count }} / {{ summaryData.total_count }}项
+                        <div class="metric-value">{{ responseData.finished_count }} / {{ responseData.total_count }}项
                         </div>
                         <div class="metric-subtext">千里之行，始于足下</div>
                     </div>
@@ -45,7 +44,7 @@
                     </div>
                     <div class="metric-details">
                         <h3>准时完成</h3>
-                        <div class="metric-value">共 {{ summaryData.ontime_finished_count }} 项</div>
+                        <div class="metric-value">共 {{ responseData.ontime_finished_count }} 项</div>
                         <div class="metric-subtext">今日事，今日毕🎉</div>
                     </div>
                 </div>
@@ -60,8 +59,8 @@
                     </div>
                     <div class="metric-details">
                         <h3>效率 Max</h3>
-                        <div class="metric-value">{{ formatDate(summaryData.most_productive_day.date) }}</div>
-                        <div class="metric-subtext">{{ summaryData.most_productive_day.count }}项任务被搞定！</div>
+                        <div class="metric-value">{{ formatDate(responseData.most_productive_day.date) }}</div>
+                        <div class="metric-subtext">{{ responseData.most_productive_day.count }}项任务被搞定！</div>
                     </div>
                 </div>
 
@@ -79,8 +78,8 @@
                     <div class="metric-details">
                         <h3>拖延 ing
                         </h3>
-                        <div class="metric-value truncate-text">{{ summaryData.longest_pending_todo.title }}</div>
-                        <div class="metric-subtext">立于 {{ formatDate(summaryData.longest_pending_todo.create_time) }}
+                        <div class="metric-value truncate-text">{{ responseData.longest_pending_todo.title }}</div>
+                        <div class="metric-subtext">立于 {{ formatDate(responseData.longest_pending_todo.create_time) }}
                         </div>
                     </div>
                 </div>
@@ -102,8 +101,8 @@
                             </svg>
                         </div>
                         <div class="highlight-details">
-                            <div class="highlight-title truncate-text">{{ summaryData.fastest_todo.title }}</div>
-                            <div class="highlight-value">{{ formatTime(summaryData.fastest_todo.completion_time) }}
+                            <div class="highlight-title truncate-text">{{ responseData.fastest_todo.title }}</div>
+                            <div class="highlight-value">{{ formatTime(responseData.fastest_todo.completion_time) }}
                             </div>
                         </div>
                     </div>
@@ -124,8 +123,8 @@
                             </svg>
                         </div>
                         <div class="highlight-details">
-                            <div class="highlight-title truncate-text">{{ summaryData.slowest_todo.title }}</div>
-                            <div class="highlight-value">{{ formatTime(summaryData.slowest_todo.completion_time) }}
+                            <div class="highlight-title truncate-text">{{ responseData.slowest_todo.title }}</div>
+                            <div class="highlight-value">{{ formatTime(responseData.slowest_todo.completion_time) }}
                             </div>
                         </div>
                     </div>
@@ -145,6 +144,8 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import * as echarts from 'echarts/core';
 import { BarChart, PieChart } from 'echarts/charts';
+import { getMonthlyTodos, getYearlyTodos } from '@/js/analyse/todo-analyse';
+import Cookies from 'js-cookie';
 import {
     TitleComponent,
     TooltipComponent,
@@ -162,53 +163,20 @@ echarts.use([
     CanvasRenderer
 ]);
 const responseData = ref({
-    "data": {
-        "fastest_todo": {
-            "completion_time": 3967.0,
-            "title": "demo_to222"
-        },
-        "finished_count": 4,
-        "longest_pending_todo": {
-            "create_time": "2025-02-22 15:23:28",
-            "id": 2,
-            "title": "写完线代作业"
-        },
-        "most_productive_day": {
-            "count": 2,
-            "date": "2025-02-22"
-        },
-        "ontime_finished_count": 2,
-        "slowest_todo": {
-            "completion_time": 86400.0,
-            "id": 1,
-            "title": "大后天写完高数作业"
-        },
-        "tag_summary": [
-            {
-                "completion_rate": "50.0",
-                "finished": "1",
-                "tag": "学习",
-                "total": 2
-            },
-            {
-                "completion_rate": "60.0",
-                "finished": "3",
-                "tag": "娱乐",
-                "total": 5
-            }
-        ],
-        "total_count": 7
-    },
-    "msg": "success"
+  finished_count: 0,
+  total_count: 0,
+  ontime_finished_count: 0,
+  most_productive_day: { date: '', count: 0 },
+  longest_pending_todo: { title: '', create_time: '' },
+  fastest_todo: { title: '', completion_time: 0 },
+  slowest_todo: { title: '', completion_time: 0 },
+  tag_summary: []
 });
 
-// Active view state (month or year)
 const activeView = ref('month');
 const tagChartRef = ref(null);
 let tagChart = null;
 
-// Computed property to get the summary data
-const summaryData = computed(() => responseData.value.data);
 
 // Set active view
 const setActiveView = (view) => {
@@ -246,10 +214,10 @@ const renderTagChart = () => {
         tagChart.dispose();
     }
     tagChart = echarts.init(tagChartRef.value);
-    const tags = summaryData.value.tag_summary.map(item => item.tag);
-    const completionRates = summaryData.value.tag_summary.map(item => parseFloat(item.completion_rate));
-    const finishedCounts = summaryData.value.tag_summary.map(item => parseInt(item.finished));
-    const totalCounts = summaryData.value.tag_summary.map(item => item.total);
+    const tags = responseData.value.tag_summary.map(item => item.tag);
+    const completionRates = responseData.value.tag_summary.map(item => parseFloat(item.completion_rate));
+    const finishedCounts = responseData.value.tag_summary.map(item => parseInt(item.finished));
+    const totalCounts = responseData.value.tag_summary.map(item => item.total);
     const option = {
         tooltip: {
             trigger: 'axis',
@@ -258,11 +226,11 @@ const renderTagChart = () => {
             },
             formatter: function (params) {
                 const tagIndex = params[0].dataIndex;
-                const tagData = summaryData.value.tag_summary[tagIndex];
+                const tagData = responseData.value.tag_summary[tagIndex];
                 return `
             <div style="font-weight: bold; margin-bottom: 5px;">${tagData.tag}</div>
-            <div>Completed: ${tagData.finished}/${tagData.total}</div>
-            <div>Completion Rate: ${tagData.completion_rate}%</div>
+            <div>完成情况: ${tagData.finished}/${tagData.total}</div>
+            <div>完成率: ${Number(tagData.completion_rate).toFixed(2)}%</div>
           `;
             }
         },
@@ -283,7 +251,7 @@ const renderTagChart = () => {
         yAxis: [
             {
                 type: 'value',
-                name: 'Todo 数量',
+                name: 'Todo 已完成/总量',
                 min: 0,
                 max: Math.max(...totalCounts) + 1,
                 interval: 1,
@@ -349,16 +317,31 @@ const renderTagChart = () => {
         tagChart.resize();
     });
 };
+const fetchData = async () => {
+    let params = {
+        "user_id": Cookies.get("user_id")
+    } 
 
-// Watch for changes in the summary data
-watch(() => summaryData.value, () => {
+    if (activeView.value == 'month' ) {
+        let res=await getMonthlyTodos(params)
+        responseData.value = res.data;
+    }
+    else {
+        let res=await getYearlyTodos(params)
+        responseData.value = res.data;
+    }
+}
+watch(activeView, () => {
+    fetchData();
+});
+watch(() => responseData.value, () => {
     renderTagChart();
 }, { deep: true });
 
-// Initialize charts when component is mounted
-onMounted(() => {
-    renderTagChart();
-});
+
+fetchData();
+renderTagChart();
+
 </script>
 
 <style>

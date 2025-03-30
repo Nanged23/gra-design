@@ -206,7 +206,7 @@ import { View, Timer, PriceTag } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import { getArticleList, getSingleArticle } from '../../js/cur/article.js';
 import { useArticleStore } from '../../stores/article';
-
+import  Cookies from 'js-cookie';
 const emits = defineEmits(['scrollToTop']);
 const articleStore = useArticleStore();
 const router = useRouter();
@@ -232,7 +232,8 @@ const goTo = (path) => {
     router.push(path);
 };
 const fetchAndGo = async (post) => {
-    const requestParams = { user_id: 123, type: 1, extra: post.id };
+
+    const requestParams = { user_id: Cookies.get("user_id"), type: 1, extra: post.id };
     const res = await getSingleArticle(requestParams);
 
     articleStore.setCurrentArticle(res.data);

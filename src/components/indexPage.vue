@@ -13,12 +13,13 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555; 
-} 
+  background: #555;
+}
+
 * {
   scrollbar-width: none;
   /* 设置滚动条宽度：auto | thin | none */
-  scrollbar-color: #888 #f1f1f1; 
+  scrollbar-color: #888 #f1f1f1;
 }
 
 .logo img {
@@ -93,6 +94,7 @@
   line-height: 25px;
   text-wrap: balance;
   letter-spacing: 1px;
+  overflow-y:hidden;
 }
 
 
@@ -226,10 +228,8 @@
         </div>
         <!-- 每日格言 -->
         <div class="advice-container">
-          <p class="paragraph">Q U O T E </p>
-          <!-- TODO 
-       post https://api.xygeng.cn/openapi/one 设置一言，如果QPS 过大 默认⬇️-->
-          <div class="advice-details">知足且上进，温柔而坚定</div>
+          <p class="paragraph">Q U O T E </p> 
+          <div class="advice-details">{{ quote_content }}</div>
           <div class="split-quote">
             <svg t="1741586765537" class="icon" viewBox="0 0 11051 1024" version="1.1"
               xmlns="http://www.w3.org/2000/svg" p-id="6414" width="200" height="30">
@@ -241,7 +241,7 @@
                 fill="#F39801" p-id="6416"></path>
             </svg>
           </div>
-          <button class="quote">
+          <button class="quote" @click="flushQuote()">
             <div :class="{ 'rotated': isRotated, 'rotate-initial': !isRotated }" @click="rotateSvg">
               <RefreshCcw size="20px" color="#d3b573" />
             </div>
@@ -310,9 +310,8 @@
         <div class="footer">
           <span style=" cursor: pointer;" @click="goTo('/indexPage')">
             <House color="#F5F5F4" />
-          </span>
-          <!-- <span class="spliter">|</span> -->
-          <EllipsisVertical Strokewidth="11px" color="#F5F5F4" />
+          </span> 
+          <EllipsisVertical size="29px" color="#4E4E51" />
           <span style=" cursor: pointer;" @click="goTo('/settings')">
             <Settings color="#F5F5F4" />
           </span>
@@ -328,19 +327,27 @@
 </template>
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch, nextTick,onMounted  } from 'vue';
 import SevenSegmentClock from './index/SevenSegmentClock.vue';
 import { SquareCheckBig, Camera, Newspaper, RefreshCcw, EllipsisVertical, Settings, House } from 'lucide-vue-next';
-
+import {getQuote} from '@/js/index/indexPage.js';
 
 const contentLayer = ref(null);
-
+let quote_content = ref('');
+const flushQuote=()=>{
+  getQuote().then((content) => {
+    quote_content.value = content;
+  });
+}
+ 
 const scrollToTop = () => {
   nextTick(() => {
     contentLayer.value.scroll({ top: 0, behavior: 'smooth' });
   });
 };
-
+onMounted(() => {
+  flushQuote()
+});
 const router = useRouter();
 const route = useRoute();
 const activePath = ref(route.path.replace('/', '') || 'default');
@@ -372,7 +379,7 @@ watch(() => route.path, (newPath) => {
       break;
     case newPath === '/third/weread':
       backgroundImage.value = `${require('@/assets/pngs/weread.png')}`;
-      break; 
+      break;
     case newPath === '/writeArticle':
       backgroundImage.value = `${require('@/assets/pngs/write-article.png')}`;
       break;
@@ -389,8 +396,8 @@ watch(() => route.path, (newPath) => {
       backgroundImage.value = `${require('@/assets/pngs/settings1.png')}`;
       break;
     default:
-    backgroundImage.value = `${require('@/assets/pngs/sky.png')}`;
-    break;
+      backgroundImage.value = `${require('@/assets/pngs/sky.png')}`;
+      break;
   }
 });
 
