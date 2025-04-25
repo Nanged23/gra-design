@@ -1,11 +1,5 @@
-import datetime
-import time
+import requests
 
-
-def test_func():
-    return datetime.datetime.now()
-
-
-print(test_func())
-time.sleep(2)
-print(test_func())
+url = "https://api.xygeng.cn/openapi/one"
+response = requests.post(url)
+print(response.text)

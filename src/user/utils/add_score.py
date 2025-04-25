@@ -1,5 +1,4 @@
-from flask import current_app
-import requests
+from src.user.service.user_service import record_daily_score
 
 
 def add_score(source, user_id):
@@ -7,7 +6,7 @@ def add_score(source, user_id):
     完成增加积分的操作
     :param user_id:用户 id
     :param source: 调用者身份
-    :return: 
+    :return:
     """
     dic = {
         "/article/write": 1.5,  # 写文章
@@ -15,10 +14,8 @@ def add_score(source, user_id):
         "/moment/write": 1,  # 写说说
         "/todo/record_memday": 1  # 记录纪念日
     }
-    add_score_api = current_app.config.get("ADD_SCORE_API")
     try:
         score = dic.get(source.split('?')[0])
-        response = requests.get(add_score_api, params={'user_id': user_id, 'score': score})
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
+        record_daily_score(user_id, score)
+    except Exception as e:
         print(f"{source}调用,错误： {e}")

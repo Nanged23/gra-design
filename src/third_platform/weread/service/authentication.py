@@ -63,5 +63,5 @@ async def get_cookies(browser_instance, max_retries=5):
         await asyncio.sleep(0.5)
         await page.reload({'waitUntil': 'load'})
         cnt += 1
-    await browser_instance.close()
+
     return specific_cookies

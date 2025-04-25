@@ -1,9 +1,7 @@
-import os
 import re
 from pypinyin import lazy_pinyin
-from src.cur_platform.article.service.ai_service import get_summary
 from src.cur_platform.article.entity import Article
-from flask import jsonify, request, after_this_request
+from flask import jsonify, request, after_this_request, current_app
 from src.basic.extensions import db, executor
 import oss2
 from oss2.credentials import EnvironmentVariableCredentialsProvider
@@ -14,6 +12,9 @@ from src.basic.extensions import redis_client
 from collections import defaultdict
 from sqlalchemy import and_
 from sqlalchemy.sql.expression import func
+from openai import OpenAI
+import os
+
 
 load_dotenv()
 
@@ -79,18 +80,41 @@ def generate_excerpt(content, article_id):
     :param article_id: 文章 id
     :return:
     """
+
+    def get_summary(a):
+        try:
+            client = OpenAI(
+                api_key=os.getenv('MOONSHOT_API_KEY'),
+                base_url="https://api.moonshot.cn/v1",
+            )
+            str1 = f"请以专业的、客观的风格分析以下博客文章的内容，无论文章类型，尝试提取其核心主题和主要信息。如果文章是观点或结论类，请重点总结其核心观点和结论；如果文章是日记、散文等其他类型，请提炼文章所表达的情感、经历或事件。用简洁的语言概括文章的主题。总结的字数控制在 180 字以内。{a}"
+            completion = client.chat.completions.create(
+                model="moonshot-v1-8k",
+                messages=[
+                    {"role": "system",
+                     "content": "你是一位[擅长内容总结]的人工智能助手，你更擅长中文和英文的对话。你会为用户提供安全，有帮助，准确的回答。同时，你会拒绝一切涉及恐怖主义，种族歧视，黄色暴力等问题的回答。"},
+                    {"role": "user", "content": str1}
+                ],
+                temperature=0.3,
+            )
+            return completion.choices[0].message.content
+        except Exception as e:
+            raise e
+
     excerpt = get_summary(content)
-    Article.query.filter_by(article_id=article_id).update({"excerpt": excerpt})
-    db.session.commit()
+    with current_app.app_context():  # 确保 Flask 应用上下文
+        article = Article.query.filter_by(id=article_id).first()  # 使用 id 而非 article_id
+        if article:
+            article.excerpt = excerpt
+            db.session.commit()
+    # Article.query.filter_by(article_id=article_id).update({"excerpt": excerpt})
+    # db.session.commit()
     return
 
 
 def write_article(title, content, user_id, tags, cover, word_diff, summary_min_len=500):
-    # TODO 增加月、年、周的文章书写报告
     if tags is None or tags == '':
-        tags = ''  # TODO 使用 AI 生成标签
-    # TODO 使用正则在英文单词前后加空格
-    # 上述 2 个功能统一为 [ AI帮忙 ]
+        tags = ''
     if cover is None or cover == '':  # 加入默认文章封面
         cover = 'https://guli-college0.oss-cn-chengdu.aliyuncs.com/%E6%96%87%E7%AB%A0%E5%B0%81%E9%9D%A2/default_cover.png'
     else:
@@ -127,7 +151,8 @@ def get_article(user_id, type, extra, default_len=20, per_page=5, tag=None):
     if type == '0':  # 获取当前页码的所有文章
         # 每页显示的文章数
         if tag is None:
-            articles = Article.query.filter_by(author_id=user_id).paginate(page=int(extra), per_page=per_page)
+            articles = Article.query.filter_by(author_id=user_id).order_by(Article.modify_time.desc()).paginate(
+                page=int(extra), per_page=per_page)
         else:
             # 将 tags 字段中的逗号等进行转义，防止拼凑 sql 出错误
             escaped_tag = re.escape(tag)
@@ -156,12 +181,14 @@ def get_article(user_id, type, extra, default_len=20, per_page=5, tag=None):
         next_article = Article.query.filter(Article.id > extra).order_by(Article.id.asc()).first()
         pre_article = {
             "id": previous_article.id,
-            "title": previous_article.title
+            "title": previous_article.title,
+            "slug": previous_article.slug
         } if previous_article else None
 
         next_article = {
             "id": next_article.id,
-            "title": next_article.title
+            "title": next_article.title,
+            "slug": next_article.slug
         } if next_article else None
         # read_time:所需的阅读时间
         read_time = len(article.content) // 300

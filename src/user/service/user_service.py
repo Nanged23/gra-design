@@ -1,10 +1,9 @@
 """
 网站个人信息相关
 """
-from flask import jsonify, request
+from flask import jsonify
 from src.basic.extensions import db
 import bcrypt
-from src.user.utils.add_score import add_score
 from sqlalchemy.orm import aliased
 from src.user.entity import User
 from src.user.entity import UserDetail
@@ -24,9 +23,11 @@ def generate_username(length=5):
 
 
 def hash_password(password):
+    print(password)
     # 生成盐，并对密码进行哈希
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    print(hashed_password.decode('utf-8'))
     return hashed_password.decode('utf-8')
 
 
@@ -37,20 +38,20 @@ def login(email, password):
     :return: 登录结果
     """
     user = User.query.filter_by(email=email).first()
+    user_id = user.id
+    user_name = UserDetail.query.filter_by(user_id=user_id).first().user_name
     if not user or not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
         return jsonify({'msg': '邮箱或密码错误'}), 401
-    user_id = user.id
-
     # 在增加登录积分之前，查询当天是否已有分数，有则证明已经登录过
     date_str = datetime.now().strftime("%Y%m%d")
     key = f"score:user_{user_id}"
     if (redis_client.hget(key, date_str) or b'0').decode('utf-8') == '0':
-        add_score(request.full_path, user_id)
-
+        record_daily_score(user_id, 0.5)
     # 更新 lastLoginTime
     user.modify_time = datetime.now(pytz.timezone('Asia/Shanghai'))
     db.session.commit()
-    return jsonify({'msg': '登录成功'}), 200
+
+    return jsonify({'msg': '登录成功', "data": {"user_id": user_id, "user_name": user_name}}), 200
 
 
 def register(email, password, code):
@@ -103,7 +104,7 @@ def update_user_by_id(data):
     """
 
     # 更新 UserDetail 表中的信息
-    user_id = data['id']
+    user_id = data['user_id']
     if 'detail' in data:
         detail_data = data['detail']
         user_detail = UserDetail.query.filter_by(user_id=user_id).first()
@@ -114,12 +115,18 @@ def update_user_by_id(data):
 
     # 更新 User 表中的信息
     if 'user' in data:
-        user_data = data['user']
+        # 先校验验证码是否正确
+        if data['user']['code'] is not None and data['user']['email'] is not None:
+            code = str(data['user']['code'])
+            email = data['user']['email']
+            if code != redis_client.get(email).decode('utf-8'):
+                return jsonify({'msg': '验证码错误'}), 400
         user = User.query.get(user_id)
-        if user:
-            for key, value in user_data.items():
-                setattr(user, key, value)
-            db.session.commit()
+        if 'password' in data['user']:
+            user.password = hash_password(data['user']['password'])
+        if 'email' in data['user']:
+            user.email = data['user']['email']
+        db.session.commit()
 
     return jsonify({"msg": "success", "data": "更新成功"}), 200
 
@@ -131,10 +138,12 @@ def record_daily_score(user_id, score):
         user_id (str): 用户 ID.
         score (float):  分数。
     """
+    print("dsdsaa111")
     date_str = datetime.now().strftime("%Y%m%d")  # 按照天为粒度计算用户每日活跃度
     key = f"score:user_{user_id}"
     try:
         redis_client.hincrbyfloat(key, date_str, score)
+        print("ds11")
         print(f"用户 {user_id} 在 {date_str} 的分数增加 {score} 成功。")
     except Exception as e:
         print(f"Redis 操作失败：{e}")
@@ -149,6 +158,7 @@ def get_daily_score(user_id):
     """
     try:
         last_login_time = User.query.filter_by(id=user_id).first().modify_time
+        create_time = User.query.filter_by(id=user_id).first().create_time
         # 获取每日积分
         hash_data = redis_client.hgetall(f'score:user_{user_id}')
         if hash_data:
@@ -168,7 +178,8 @@ def get_daily_score(user_id):
 
                 # 将 field 和 value 添加到字典中
                 result_dict[field] = value
-            return jsonify({"msg": "success", "data": {"heatMap": result_dict, "lastLoginTime": last_login_time}}), 200
+            return jsonify({"msg": "success", "data": {"heatMap": result_dict, "lastLoginTime": last_login_time,
+                                                       "createTime": create_time}}), 200
         else:
             return jsonify({"msg": "每日活动情况为空，请检查 user_id "}), 404
     except Exception as e:

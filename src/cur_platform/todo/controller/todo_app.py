@@ -4,7 +4,7 @@ from src.cur_platform.todo.service import todo_service
 todo_bp = Blueprint('todo_bp', __name__, url_prefix='/todo')
 
 
-# TODO todo的 deadline 通知功能
+#TODO todo的 deadline 通知功能
 
 @todo_bp.route('/record_memday', methods=['POST'])
 def record_day():
@@ -17,7 +17,8 @@ def record_day():
     mem_date = params.get('date')
     user_id = params.get('user_id')
     mem_desc = params.setdefault('description', '')
-    return todo_service.record_memday(user_id, mem_name, mem_date, mem_desc)
+    category = params.get('category')
+    return todo_service.record_memday(user_id, mem_name, mem_date, mem_desc,category)
 
 
 @todo_bp.route('/get_memday', methods=['GET'])
@@ -43,11 +44,14 @@ def record_todo():
 @todo_bp.route('/get_todo', methods=['GET'])
 def get_todo():
     args = request.args
+    for key, value in request.args.items():
+        print(f"{key}:{value}")
     user_id = args.get('user_id')
     is_finished = args.get('is_finished')
     tags = args.get('tags')
     page = args.get('page')
-    return todo_service.get_todo(user_id, is_finished, tags, page)
+    type1 = args.get('type')
+    return todo_service.get_todo(user_id, is_finished, tags, page, type1)
 
 
 @todo_bp.route('/monthly_todos', methods=['GET'])

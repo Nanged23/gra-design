@@ -7,6 +7,7 @@ article_bp = Blueprint('article_bp', __name__, url_prefix='/article')
 @article_bp.route('/write', methods=['POST'])
 def write_article():
     params = request.form.to_dict()  # 用来处理 multipart/form-data 格式
+    print(params)
     content = params.get('content')
     title = params.get('title')
     tags = params.get('tags')

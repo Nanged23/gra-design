@@ -28,7 +28,6 @@ def send_email(email):
         server.quit()  # 关闭连接
     except Exception as e:
         print(e)
-        print("cddsc")
         return jsonify({"msg": "验证码发送失败，请稍后再试!"}), 500
     return jsonify({"msg": "验证码发送成功，请注意查收!"}), 200
 

@@ -35,7 +35,6 @@ async def get_cookies():
     if not browser_instance:
         return jsonify("未获取到浏览器实例，！"), 500
     specific_cookies = await authentication.get_cookies(browser_instance)
-    # TODO 需要存储在 redis 中
     return jsonify({"mes": "success", "data": {"cookies": specific_cookies}}), 200
 
 

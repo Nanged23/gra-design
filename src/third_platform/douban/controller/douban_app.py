@@ -22,7 +22,7 @@ def get_user_info():
 @douban_bp.route('/demo', methods=['GET'])
 # 向数据库写入数据用的接口
 def geta():
-    douban_service.temp()
+    douban_service.temp2()
     return jsonify({"mes": 1}), 200
 
 

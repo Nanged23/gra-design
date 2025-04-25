@@ -29,7 +29,7 @@ def get_mood_classify(text, memo_id):
     ans = js["items"][0]
     confidence = ans["confidence"]
     if confidence > 0.5:
-        mood_type = ans["sentiment"]  # 0: 负向，1: 中性，2: 正向
+        mood_type = ans["sentiment"]  # 0: 悲观，1: 中性，2: 乐观
         if mood_type != 1:
             Moment.query.filter_by(id=memo_id).update({"mood": mood_type})
             db.session.commit()

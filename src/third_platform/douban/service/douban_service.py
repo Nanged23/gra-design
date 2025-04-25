@@ -11,11 +11,12 @@ from dateutil.relativedelta import relativedelta
 import pytz
 from sqlalchemy import text
 
+
 def get_data(user_id, category, page, per_page=15):
     """
     :param page:数字，标识当前页码
     :param user_id:用户 id，非豆瓣 id
-    :param category:分类，分为 wish 和 collect，分别表示看过和想看
+    :param category:分类，分为 -1 -2 1 2，分别表示想看和看过，图书和电影
     :param per_page:每页条目数量
     :return:
     """
@@ -31,8 +32,8 @@ def get_user(user_id):
     :param user_id:用户 id
     :return:用户的个人信息
     """
-    user_id = UserDetail.query.filter_by(id=user_id).first().douban_id
-    url = "https://api.douban.com/v2/user/" + str(user_id) + "?apikey=054022eaeae0b00e0fc068c0c0a2102a"
+    douban_id = UserDetail.query.filter_by(user_id=user_id).first().douban_id
+    url = "https://api.douban.com/v2/user/" + str(douban_id) + "?apikey=054022eaeae0b00e0fc068c0c0a2102a"
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
@@ -99,7 +100,6 @@ def get_summary(user_id):
     summary['oldest_wish_book'] = oldest_wish_book.to_dict() if oldest_wish_book else None
 
     # 2. 想看的电影中，最多的前三个标签情况 & # 6. 看过的电影中，最多的前三个标签
-
 
     def get_top_tags(row_type, limit=3):
         query = text("""
@@ -211,3 +211,12 @@ def get_summary(user_id):
     summary['total_watched_movies'] = Douban.query.filter_by(user_id=user_id, row_type='2').count()
 
     return jsonify({"msg": "success", "data": summary}), 200
+
+
+def temp2():
+    import os
+    oss_prefix = "https://guli-college0.oss-cn-chengdu.aliyuncs.com/%E8%B1%86%E7%93%A3%E5%B0%81%E9%9D%A2/"
+    data = Douban.query.filter(Douban.id > -11)
+    for i in data:
+        i.img = oss_prefix + os.path.basename(i.img)
+    db.session.commit()

@@ -7,11 +7,11 @@ import pytz
 from sqlalchemy import func, cast, Date, Integer
 
 
-def record_memday(user_id, mem_name, mem_date, mem_desc):
+def record_memday(user_id, mem_name, mem_date, mem_desc,category):
     """
     新增纪念日
     """
-    mem_day = MemEvent(user_id=user_id, event_name=mem_name, event_date=mem_date, description=mem_desc)
+    mem_day = MemEvent(user_id=user_id, event_name=mem_name, event_date=mem_date, description=mem_desc,category=category)
     db.session.add(mem_day)
     db.session.commit()
     return jsonify({"msg": "success", "data": "新增纪念日成功"}), 201
@@ -35,7 +35,7 @@ def record_todo(user_id, title, tags, set_time, finish_time):
     return jsonify({"msg": "success", "data": "新增 todo 成功"}), 201
 
 
-def get_todo(user_id, is_finished, tags, page, per_page=5):
+def get_todo(user_id, is_finished, tags, page, type, per_page=5):
     """
     获取用户的所有todo
     """
@@ -47,9 +47,20 @@ def get_todo(user_id, is_finished, tags, page, per_page=5):
 
     if tags:
         conditions.append(Todo.tags == tags)
+    now = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
 
-    paginated_result = Todo.query.filter(and_(*conditions)).paginate(page=int(page),
-                                                                     per_page=per_page)  # 使用 and_ 连接所有条件
+    if type is None or type == "":
+        conditions.append(Todo.set_time.is_(None))
+    else:
+        conditions.append(Todo.set_time >= now)
+        if type == "recent":
+            conditions.append(
+                Todo.set_time <= now + datetime.timedelta(days=1))
+        elif type == "future":
+            conditions.append(
+                Todo.set_time > now + datetime.timedelta(days=1))
+    paginated_result = Todo.query.filter(and_(*conditions)).order_by(Todo.create_time.desc()).paginate(page=int(page),
+                                                                                                       per_page=per_page)  # 使用 and_ 连接所有条件
     todos = paginated_result.items  # 获取当前页的Todo列表
     total_pages = paginated_result.pages  # 获取总页数
     total_items = paginated_result.total  # 获取总条数
@@ -59,7 +70,6 @@ def get_todo(user_id, is_finished, tags, page, per_page=5):
 
 
 def get_todos(user_id, limit_time):
-    # 查询近一个月的数据总行数
     # 查询近一个月的数据总行数
     total_count = db.session.query(Todo).filter(Todo.user_id == user_id, Todo.create_time >= limit_time).count()
 
