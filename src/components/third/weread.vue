@@ -9,35 +9,48 @@
 
             <div v-if="showModal" class="modal">
                 <div class="modal-content1">
-                    <div v-if="hasNotQrcode">加载中 </div>
-                    <img :src="qrcode" alt="二维码" class="qrcode" />
+                    <div align="center">使用微信扫一扫</div>
+                    <br>
 
+                    <div class="qrcode-placeholder">
+                        <div v-if="!qrcode">
+                            <img src='../../assets/pngs/loading.gif' style="width:300px;height:300px" />
+                        </div>
+                        <div v-else>
+                            <img :src="qrcode" alt="二维码" class="qrcode" />
+                        </div>
+                    </div>
+            
 
+                <div class="footer_btn">
                     <button @click="showModal = false">关闭</button>
                     <button @click="handleScanned">我已扫码</button>
                 </div>
+
             </div>
+        </div>
         </div>
     </main>
 </template>
 
 <script setup>
+import socket from '@/socket/socket.js';
 import BookshelfDisplay from './BookshelfDisplay.vue';
 import { ref, watch, onUnmounted, onMounted } from 'vue';
-import { login, getCookie } from '@/js/cur/weread';
 import Cookies from 'js-cookie';
 let showModal = ref(false);
 let qrcode = ref('');
 let timer = null;
-let hasCookie = ref(true);
+let hasCookie = ref(false);
 let hasNotQrcode = ref(true);
+let cookie = ref({
+    'wr_vid': "",
+    'wr_skey': ""
+});
 const fetchQRCode = async () => {
-    const result = await login();
-    console.log(result);
-    qrcode.value = result.data.qrcode;
-
+    socket.emit('message');
 };
-
+// 二维码倒计时 3 分钟
 const startTimer = () => {
     console.log("开始计时");
 
@@ -46,16 +59,15 @@ const startTimer = () => {
         fetchQRCode();
         startTimer();
     }, 3 * 60 * 1000);
-    // 二维码倒计时 3 分钟
 };
-const handleScanned = async () => {
-    console.log('用户已扫码');
-    let res = await getCookie();
-    console.log(res);
-    console.log(res.cookies);
+// 尝试从无头浏览器获取 cookie
+const handleScanned = async () => { 
+    socket.emit('cookie_data');
     showModal.value = false;
     clearTimeout(timer);
     hasCookie = true;
+    Cookies.setCookie('wr_vid', cookie.value.wr_vid);
+    Cookies.setCookie('wr_skey', cookie.value.wr_skey);
 };
 
 watch(showModal, (newVal) => {
@@ -76,7 +88,6 @@ watch(showModal, (newVal) => {
                 hasNotQrcode = true;
             }, 3000);
         } else {
-            console.log("aaa");
             hasNotQrcode = true;
         }
         startTimer();
@@ -90,6 +101,19 @@ onUnmounted(() => {
 });
 onMounted(() => {
     hasCookie = Cookies.get("wr_skey") == undefined ? false : true;
+    socket.on('connect', () => {
+        console.log('已连接到后端');
+    });
+
+    socket.on('disconnect', () => {
+        console.log('与后端断开连接');
+    });
+    socket.on('message', (data) => {
+        qrcode.value = data;
+    });
+    socket.on('get_cookie', (data) => {
+        cookie.value = data;
+    });
 });
 </script>
 
@@ -119,8 +143,21 @@ body {
     font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
+.footer_btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
 .bg-gradient {
     background: transparent;
+}
+
+.qrcode-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal {

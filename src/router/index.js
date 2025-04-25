@@ -17,6 +17,7 @@ import settings from '@/components/index/settings.vue';
 import articleDetail from '@/components/cur/articleDetail.vue';
 import writeArticle from '@/components/cur/writeArticle.vue';
 import indexPage from '@/components/indexPage.vue';
+import demo from '@/components/third/demo.vue';
 const routes = [
     {
         path: '/',
@@ -36,6 +37,11 @@ const routes = [
             path: '/settings',
             name: 'settings',
             component: settings
+        },
+        {
+            path:'/demo',
+            name: 'demo',
+            component: demo
         },
         {
             path: '/article',

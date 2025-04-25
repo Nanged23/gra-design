@@ -23,6 +23,7 @@
     "lucide-vue-next": "^0.482.0",
     "marked": "^15.0.7",
     "pinia": "^3.0.1",
+    "socket.io-client": "^4.8.1",
     "vanilla-tilt": "^1.8.1",
     "vue": "^3.2.13",
     "vue-axios": "^3.5.2",
