@@ -8,3 +8,12 @@ export async function getTodoList(params) {
         throw error;
     }
 }
+export async function writeTodo(params) {
+    try {
+        const response = await api.post(`/todo/record_todo`,  params );
+        return response.data;
+    } catch (error) {
+        console.error("新增 todo 失败:", error);
+        throw error;
+    }
+}

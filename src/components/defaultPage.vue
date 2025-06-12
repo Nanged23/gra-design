@@ -1,6 +1,5 @@
 <template>
-    <div class="main-container">
-        <!-- 第一屏：用户信息、背景和海浪 -->
+    <div class="main-container"> 
         <div class="intro-section" ref="introSection">
             <div class="background"></div>
 
@@ -30,8 +29,7 @@
                 </svg>
             </div>
         </div>
-
-        <!-- 第二屏：数据展示区域 -->
+ 
         <div class="data-section" ref="dataSection">
             <!-- 年度剩余 -->
             <div class="time-remaining">
@@ -108,7 +106,8 @@ const userData = ref(
         lastVisit: 0
     }
 );
-
+let typingTimeoutId = null;
+let restartTimeoutId = null;
 const getUesrData = async () => {
     let requestParams = { "user_id": Cookie.get("user_id") }
     const hotmap_res = await getHotMap(requestParams);
@@ -222,42 +221,61 @@ const getAnn = async () => {
 const signatureText = ref(null);
 const heatmapChart = ref(null);
 let chart = null;
-
-// Typewriter effect
+const stopTypewriter = () => {
+    if (typingTimeoutId) clearTimeout(typingTimeoutId);
+    if (restartTimeoutId) clearTimeout(restartTimeoutId);
+    typingTimeoutId = null;
+    restartTimeoutId = null;
+};
 const typewriterEffect = () => {
+  stopTypewriter(); 
+
   if (!signatureText.value) {
-    console.error("signatureText is not yet bound to DOM element.");
+    // console.warn("signatureText is not yet bound to DOM element.");
     return;
   }
-  const text = userData.value.signature || "";
-  let i = 0;
 
-  const typing = () => {
+  const text = userData.value.signature || ""; // Use the fetched signature
+  signatureText.value.textContent = ''; // Clear current text first
+
+  if (!text) { // If signature is empty, do nothing further
+      return;
+  }
+
+  let i = 0;
+  const type = () => {
+    if (!signatureText.value) { // Double check if element still exists
+        stopTypewriter(); 
+        return;
+    }
     if (i < text.length) {
       signatureText.value.textContent = text.slice(0, i + 1);
       i++;
-      setTimeout(typing, 100);
+      typingTimeoutId = setTimeout(type, 100);
     } else {
-      setTimeout(() => {
-        signatureText.value.textContent = '';
-        i = 0;
-        typing();
-      }, 3000);
+      restartTimeoutId = setTimeout(() => {
+        typewriterEffect();
+      }, 3000); 
     }
   };
-  typing();
+  type(); 
 };
+
 onMounted(async () => {
     await getUesrData();
     await getAnn();
     await nextTick();
     initHeatmap();
-    typewriterEffect(); // 调用时确保 DOM 已渲染
+    typewriterEffect(); 
 });
 onUnmounted(() => {
-    if (chart) chart.dispose();
+    if (chart) {
+        chart.dispose();
+        chart = null;
+    }
+    stopTypewriter();
 });
-// 初始化热力图
+
 const initHeatmap = () => {
     if (chart) {
         chart.dispose();
@@ -311,15 +329,12 @@ const initHeatmap = () => {
     overflow-y: auto;
 }
 
-/* 第一屏样式 */
 .intro-section {
     position: relative;
     width: 95%;
     height: 50vh;
     background: transparent;
 }
-
-
 
 .user-info {
     display: flex;
@@ -369,7 +384,6 @@ const initHeatmap = () => {
     }
 }
 
-/* 第二屏样式 */
 .data-section {
     position: relative;
     width: 95%;

@@ -9,9 +9,7 @@
     </div>
 
     <div class="card-content">
-      <h2 class="book-title">{{ book.title }}</h2>
-      <p class="book-author">{{ book.author }}</p>
-      <p class="book-description">{{ book.description }}</p>
+      <h2 class="book-title">{{ book.title }}</h2> 
     </div>
 
   </div>
@@ -122,7 +120,7 @@ watch(() => props.isActive, (newValue) => {
 }
 
 .cover-container {
-  height: 65%;
+  height: 100%;
   position: relative;
   overflow: hidden;
 }
@@ -181,6 +179,8 @@ watch(() => props.isActive, (newValue) => {
 }
 
 .book-title {
+  padding-left:4px;
+  padding-right:4px;
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.25rem;

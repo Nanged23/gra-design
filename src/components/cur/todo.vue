@@ -1,13 +1,12 @@
-<style scoped> 
+<style scoped>
 .menu-bar {
     padding: 0.5rem;
     border-radius: 1rem;
-    /* background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(241, 238, 227, 0.4)); */
-    background: linear-gradient(90deg, 
-        rgba(204, 219, 244, 0.7), 
-        rgba(237, 211, 193, 0.7), 
-        rgba(212, 243, 224, 0.7), 
-        rgba(243, 210, 210, 0.7)); 
+    background: linear-gradient(90deg,
+            rgba(204, 219, 244, 0.7),
+            rgba(237, 211, 193, 0.7),
+            rgba(212, 243, 224, 0.7),
+            rgba(243, 210, 210, 0.7));
     backdrop-filter: blur(10px);
     border: 1px solid rgba(229, 231, 235, 0.4);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -200,9 +199,9 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: linear-gradient(135deg, 
-        rgba(255, 255, 255, 0.4) 0%, 
-        rgba(255, 255, 255, 0.1) 100%);
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.4) 0%,
+            rgba(255, 255, 255, 0.1) 100%);
     border-radius: inherit;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -224,9 +223,9 @@
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, 
-        var(--item-color-start, rgba(59, 130, 246, 0.7)), 
-        var(--item-color-end, rgba(124, 58, 237, 0.7)));
+    background: linear-gradient(90deg,
+            var(--item-color-start, rgba(59, 130, 246, 0.7)),
+            var(--item-color-end, rgba(124, 58, 237, 0.7)));
     transition: transform 0.3s ease;
     transform-origin: left;
 }
@@ -318,6 +317,7 @@
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -362,16 +362,50 @@
                         </a>
                     </div>
                 </li>
+                <li>
+                    <span style="margin-left:120px;">
+                        <el-button type="primary" @click="openFormDialog">➕</el-button>
+                    </span>
+                </li>
             </ul>
+
+
         </nav>
+        <el-dialog v-model="dialogFormVisible" title="我的表单" width="500px" :before-close="handleDialogClose">
+            <el-form ref="form" :model="form.value" label-width="80px">
+                <el-form-item label="待办名称">
+                    <el-input v-model="form.name"></el-input>
+                </el-form-item>
+
+                <el-form-item label="预计完成">
+                    <el-col :span="11">
+                        <el-date-picker type="date" placeholder="日期" v-model="form.date1"
+                            style="width: 100%;"></el-date-picker>
+                    </el-col>
+                    <el-col class="line" :span="2">-</el-col>
+                    <el-col :span="11">
+                        <el-time-picker placeholder="时间" v-model="form.date2" style="width: 100%;"></el-time-picker>
+                    </el-col>
+                </el-form-item>
+                <el-form-item label="所属标签">
+                    <el-checkbox-group v-model="form.type1"> <!-- 确保 v-model 访问的是 form.value.type -->
+                        <el-checkbox value="生活" name="type">生活</el-checkbox>
+                        <el-checkbox value="学习" name="type">学习</el-checkbox>
+                        <el-checkbox value="工作" name="type">工作</el-checkbox>
+                    </el-checkbox-group>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSubmit">立即创建</el-button>
+                    <el-button>取消</el-button>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
         <div class="content-area">
             <ul class="tab-list">
-                <li v-for="(item, index) in currentList" :key="item.id" 
-                    :class="[
-                        'list-item', 
-                        `list-item-${menuItems[selectedIndex].apiEndpoint}`
-                    ]" 
-                    :style="{ '--index': index }">
+                <li v-for="(item, index) in currentList" :key="item.id" :class="[
+                    'list-item',
+                    `list-item-${menuItems[selectedIndex].apiEndpoint}`
+                ]" :style="{ '--index': index }">
                     <h3 class="list-item-title">{{ item.title }}</h3>
                     <div class="list-item-tags">
                         <span v-if="item.tags" v-for="tag in formatTags(item.tags)" :key="tag" class="tag">
@@ -396,14 +430,71 @@
 import { ref, computed, onMounted } from 'vue';
 import { Home, Settings, Bell, Crosshair } from 'lucide-vue-next';
 import Cookies from 'js-cookie';
-import { getTodoList } from '@/js/cur/todo';
-
+import { getTodoList, writeTodo } from '@/js/cur/todo';
+const dialogFormVisible = ref(false);
 const isHovered = ref(false);
 const hoveredItem = ref(null);
 const selectedIndex = ref(0);
 const lists = ref({});
 const other_data = ref({});
+const form = ref({
+    name: '',
+    date1: null,
+    date2: null,
+    type1: ["学习", "工作", "生活"]
+});
+const formRef = ref(null);
+const openFormDialog = () => {
+    dialogFormVisible.value = true;
+    form.value.name = '';
+    form.value.date1 = null;
+    form.value.date2 = null;
+    form.value.type1 = [];
+    if (formRef.value) {
+        formRef.value.clearValidate();
+    }
+};
+const handleDialogClose = (done) => {
+    done(); 
+};
+const onSubmit = async () => {
+    if (!formRef.value) return;
+    let expectedCompletionTime = null;
+    if (form.value.date1 && form.value.date2) {
+        const datePart = new Date(form.value.date1);
+        const timePart = new Date(form.value.date2);
+        expectedCompletionTime = new Date(
+            datePart.getFullYear(),
+            datePart.getMonth(),
+            datePart.getDate(),
+            timePart.getHours(),
+            timePart.getMinutes(),
+            timePart.getSeconds()
+        );
+    } else if (form.value.date1) {
+        expectedCompletionTime = new Date(form.value.date1);
+    } const params = {
+        name: form.value.name, // 从 form.value 读取
+        expectedCompletionTime: expectedCompletionTime,
+        tags: form.value.type1 // 从 form.value 读取
+    };
 
+    try {
+        const response = await writeTodo(params);
+        if (response && response.success) {
+            ElMessage.success(response.message || '创建成功！');
+            dialogFormVisible.value = false; // 关闭对话框
+
+            // 4. 刷新页面
+            window.location.reload();
+        } else {
+            ElMessage.error(response.message || '创建失败，请稍后再试。');
+        }
+    } catch (error) {
+        console.error("创建待办事项失败:", error);
+        ElMessage.error('创建过程中发生错误。');
+    }
+};
 const currentList = computed(() => {
     const endpoint = menuItems[selectedIndex.value].apiEndpoint;
     return lists.value[endpoint] || [];
@@ -477,7 +568,7 @@ const fetchList = async (endpoint) => {
         "total_pages": res.data.total_pages,
     };
     console.log(other_data.value);
-    
+
     lists.value[endpoint] = res.data.items;
 };
 
@@ -493,4 +584,3 @@ onMounted(() => {
     fetchList(menuItems[0].apiEndpoint);
 });
 </script>
-

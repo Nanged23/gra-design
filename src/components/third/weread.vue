@@ -5,7 +5,7 @@
             <BookshelfDisplay />
         </div>
         <div v-else>
-            <button @click="showModal = true">打开弹窗</button>
+            <button style="margin-left:550px;margin-top:400px;" @click="showModal = true">立即登录</button>
 
             <div v-if="showModal" class="modal">
                 <div class="modal-content1">
@@ -37,16 +37,13 @@
 import socket from '@/socket/socket.js';
 import BookshelfDisplay from './BookshelfDisplay.vue';
 import { ref, watch, onUnmounted, onMounted } from 'vue';
-import Cookies from 'js-cookie';
+import { ElMessage } from 'element-plus';
+import Cookie from 'js-cookie';
 let showModal = ref(false);
 let qrcode = ref('');
 let timer = null;
-let hasCookie = ref(false);
-let hasNotQrcode = ref(true);
-let cookie = ref({
-    'wr_vid': "",
-    'wr_skey': ""
-});
+let hasCookie = ref(false); 
+let cookie = ref(null);
 const fetchQRCode = async () => {
     socket.emit('message');
 };
@@ -64,10 +61,7 @@ const startTimer = () => {
 const handleScanned = async () => { 
     socket.emit('cookie_data');
     showModal.value = false;
-    clearTimeout(timer);
-    hasCookie = true;
-    Cookies.setCookie('wr_vid', cookie.value.wr_vid);
-    Cookies.setCookie('wr_skey', cookie.value.wr_skey);
+    clearTimeout(timer); 
 };
 
 watch(showModal, (newVal) => {
@@ -78,18 +72,14 @@ watch(showModal, (newVal) => {
             const intervalId = setInterval(() => {
                 if (qrcode.value != '') {
                     console.log('qrcode 已更新，轮询结束');
-                    clearInterval(intervalId);
-                    hasNotQrcode = true;
+                    clearInterval(intervalId); 
                 }
             }, 100);
             setTimeout(() => {
                 clearInterval(intervalId);
-                console.log('3 秒轮询结束');
-                hasNotQrcode = true;
+                console.log('3 秒轮询结束'); 
             }, 3000);
-        } else {
-            hasNotQrcode = true;
-        }
+        }  
         startTimer();
     } else {
         clearTimeout(timer);
@@ -100,7 +90,7 @@ onUnmounted(() => {
     clearTimeout(timer);
 });
 onMounted(() => {
-    hasCookie = Cookies.get("wr_skey") == undefined ? false : true;
+    hasCookie.value = Cookie.get("wr_skey") !== undefined;
     socket.on('connect', () => {
         console.log('已连接到后端');
     });
@@ -111,8 +101,18 @@ onMounted(() => {
     socket.on('message', (data) => {
         qrcode.value = data;
     });
-    socket.on('get_cookie', (data) => {
-        cookie.value = data;
+    socket.on('cookie_data', (data) => { 
+        if (data && data.wr_vid && data.wr_skey) {
+            cookie.value = data;   
+            Cookie.set('wr_vid', data.wr_vid);
+            Cookie.set('wr_skey', data.wr_skey);
+            hasCookie.value = true;  
+        } else {
+            ElMessage({
+            type: 'error',
+            message: '登录超时，请刷新本页面重试～'
+        })
+        }
     });
 });
 </script>

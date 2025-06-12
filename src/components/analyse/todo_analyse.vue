@@ -11,7 +11,7 @@
         </div>
 
         <!-- Main Content -->
-        <div class="summary-content">
+        <div v-if="responseData.tag_summary!=[]" class="summary-content">
             <!-- Key Metrics -->
             <div class="metrics-grid">
                 <div class="metric-card">

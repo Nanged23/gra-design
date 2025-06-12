@@ -232,7 +232,7 @@ body {
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getVerifyCode, register } from '@/js/user.js'
+import { getVerifyCode, register } from '@/js/user/user.js'
 import { ElMessage } from 'element-plus'
 
 const email = ref('')

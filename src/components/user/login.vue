@@ -221,7 +221,7 @@ import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
 import Cookies from 'js-cookie';
 import { useRouter } from 'vue-router'
-import { login } from '@/js/user';
+import { login } from '@/js/user/user.js';
 const particleCount = ref(40);
 const email = ref('')
 const password = ref('')
