@@ -1,13 +1,21 @@
 # 项目后端服务
 
 ## 📍 概述
-本分支为项目后端部分，采用多蓝图方式实现各模块。
+本分支为项目后端部分，使用 Python3.12，采用多蓝图方式实现各模块。
 
 ## 🛠 核心架构
 **主要技术栈**:
 - **Web框架**: Flask + SocketIO
 - **数据库**: MySQL (主存储) + Redis (缓存)
 - **云服务**: 阿里云OSS (对象存储)
+- 
+## 📝 设计文档
+
+功能需求分析图、实体联系图、实体属性图：
+![图1](../gra-design/src/assert/img1.png)
+
+接口一览图、系统架构图、功能模块图：
+![图2](../gra-design/src/assert/img2.png)
 
 ## 📁 文件结构
 ```bash
@@ -68,7 +76,7 @@
         └── utils
             └── add_score.py     
 ```
-- **assert 文件夹**用于存储媒体数据，目前存储了一个 404 图片
+- **assert 文件夹**用于存储媒体数据
 - **basic 文件夹**完成了项目的初始化内容，如初始化数据库，初始化 executor 队列，创建 socketIO 实例等
 - **cur_platform、third_platform 和user** 是主要功能的实现。三个文件夹分别表示不同的服务模块，各模块都是 controller、service 文件夹+entity.py的主架构，分别是接口层及其对应实现。部分模块含有的 utils 文件夹里，是封装了一些工具函数。
 - **scripts 文件夹**存储了脚本文件，分别是解密.env、备份 mysql 和 redis
