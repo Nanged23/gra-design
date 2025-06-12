@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 from flask_socketio import SocketIO
 from pyppeteer import launch
 import asyncio
-from pyppeteer.errors import PyppeteerError
 
 # 创建 Flask 应用
 load_dotenv()

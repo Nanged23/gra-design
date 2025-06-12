@@ -132,43 +132,90 @@ def android_request(vid, skey, url):
         'accessToken': skey,
         'vid': vid,
         'baseapi': '31',
-        'appver': '9.0.0.10165035',
-        'User-Agent': 'WeRead/9.0.0 WRBrand/honor Dalvik/2.1.0 (Linux; U; Android 12; ALA-AN70 Build/HONORALA-AN70)',
+        'appver': '9.3.0.10165973',
+        'User-Agent': 'WeRead/9.3.0 WRBrand/honor Dalvik/2.1.0 (Linux; U; Android 12; ALA-AN70 Build/HONORALA-AN70)',
         'osver': '12',
-        'channelId': '0',
-        'basever': '9.0.0.10165034',
+        'channelId': '22',
+        'basever': '9.3.0.10165973',
         'Host': 'i.weread.qq.com',
         'Connection': 'Keep-Alive',
         'Accept-Encoding': 'gzip'
     }
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.get(url, headers=headers, params=params, verify=False)
+    print(response.json())
     return response.json()
 
 
 def mac_request(vid, skey, url, type):
     # 封装的基础请求函数
     headers = {
-        "Host": "i.weread.qq.com",
+        "Host": "weread.qq.com",
         "Connection": "keep-alive",
         "Upgrade-Insecure-Requests": "1",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
-        "Accept-Encoding": "gzip, deflate, br",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
         "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
     }
 
     cookies = {
-        "wr_skey": skey,
-        "wr_vid": vid,
-    }
+  "_clck": "1sq5wgf|1|ftj|0",
+  "_qimei_fingerprint": "65257215be7487d9169c58539e064a0e",
+  "_qimei_h38": "ca20fefa61d54e05599ff65d0300000a718501",
+  "_qimei_q36": "",
+  "eas_sid": "31v7T1b6c9Z0l3o6T2A151N5g3",
+  "fopenid": "64E4CAA57F58D7B2C96E7890DFA220F1",
+  "fqm_pvqid": "86d90983-be5d-43c0-b331-be75aa6ce116",
+  "ied_qq": "o2074759416",
+  "it_c": "0",
+  "o_cookie": "2074759416",
+  "p_skey": "Rao7lTH-37DdtaHshbms6TSu2k9m93uEPCDCBdOBt-8_",
+  "p_uin": "o2074759416",
+  "pac_uid": "0_fjjsDpZmfK67t",
+  "pgv_info": "ssid=s2531873086",
+  "pgv_pvid": "32612000",
+  "pt4_token": "awiEk4pKB5LA-Ec*DRV-uG4ui3stHF*heV-ut90917A_",
+  "ptcz": "473705f82ffde7baeef31279e09cf14f049a380e56e8d7316e707b714763636b",
+  "qbmac_uid": "aaaaoervw3l45fb6571isp6py1uy88cb",
+  "qm_device_id": "g0++FFDMHylM8rkpyx0fw5k3U3AHMvq+CdpIZUbNgKPSODcz/Ly6FWyVFDgmJGUY",
+  "qm_logintype": "qq",
+  "qq_domain_video_guid_verify": "0b1e78e8f1e30859",
+  "RK": "MiPwOzJ+ef",
+  "sid": "2074759416&30e7b44b30934c3490e0d9f8bbf559d7,qWVdOYVVBQS1xU2w3UDBhVm9XQ1VSN0NPOE5NN1Z2cUdOWUwzOUtlLTZlNF8.",
+  "skey": "@9I0SaroSd",
+  "suid": "user_0_fjjsDpZmfK67t",
+  "token": "6CF357A5E792EB7856AEA0D495E6319A",
+  "uin": "o2074759416",
+  "wr_avatar": "https%3A%2F%2Fthirdwx.qlogo.cn%2Fmmopen%2Fvi_32%2F5Cd5DiaVksY2AJU7OSfgVddHzfEvEkDt73IRlf5wtXAX8P0ArBVyyM1fwiaMVdPx5PjnCEORshpf0nGm6ic8bicyY4iaETDiaNOvI1mJy3tvl1aMU%2F132",
+  "wr_fp": "3300175283",
+  "wr_gender": "1",
+  "wr_gid": "290404310",
+  "wr_localvid": "a44325a081a6379d5a44b11",
+  "wr_name": "%E5%90%83%E5%8F%A3%E5%A4%A7%E6%B1%A4%E5%9C%86",
+  "wr_pf": "undefined",
+  "wr_rt": "web%40tmNT1q_K_Z6Thpz1baG_AL",
+  "wr_skey": "6K00x_6b",
+  "wr_vid": "442726869",
+  "xm_data_ticket": "13102663099633912&CAESIGgTSSAALozNe6pQ-HsxJPzZOytFiEGVvPZmqUTz5lMT",
+  "xm_device_id": "cc5a4691",
+  "xm_envid": "456_kWRWAR6bFCxG2viDCpplaSU+WtZb2+Q2fn0uu8yFH6nz5RKGPiP0HFKh1yP43O9cd0xfh+uyoVLitBDdXex7xgDDGuZbp5xxD0bCjqngBAeQdnsRJT7FhYcSPu7ZndC6FK1cleOYFs+LWEyETAqnw677jj0Dvf5NND1CtgpU47Gbm5+ksQ2sAi8u2hrgy9Y=",
+  "xm_muti_sid": "13102663099633912&zfhoeoxQSnUuqkJFAHsyMAAA",
+  "xm_pcache": "13102663099633912&V2@ztDOe5w5RNq0EwPYQqQ4OwAA@0",
+  "xm_sid": "zfhoeoxQSnUuqkJFAHsyMAAA",
+  "xm_skey": "13102663099633912&488d9e486c4f10ae9d268bcc7a47f23f",
+  "xm_uin": "13102663099633912",
+  "xm_ws": "13102663099633912&a93bb7ffe4720475a85a0b5a34f9ac2c"
+}
+
     params = dict(userVid=vid)
     if type == 1:
         r = requests.get(url, headers=headers, cookies=cookies, verify=False)
     else:
         r = requests.get(url, params=params, headers=headers, cookies=cookies, verify=False)
     if r.ok:
-        return r.json()
+        return r.text
     else:
+        print("在获取书架信息时:", r.text)
         return None
 
 
@@ -180,6 +227,8 @@ def get_user_bookshelf(vid, skey):
     """
     url = "https://i.weread.qq.com/shelf/sync"
     response = mac_request(vid, skey, url, 0)
+    # response = android_request(vid, skey, url)
+    print(response)
     result = {
         "archive": [
             {
